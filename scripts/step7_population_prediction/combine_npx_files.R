@@ -5,17 +5,17 @@
 # Purpose:
 # This script combines individual protein prediction files from Step 7a into a
 # single comprehensive dataset containing predicted protein levels for all proteins
-# across the entire UK Biobank white European cohort. This creates the final
+# across the entire UK Biobank White British cohort. This creates the final
 # proteome-wide prediction matrix for PWAS analysis.
 #
 # Input:
 # 1. Individual protein prediction files from Step 7a:
-#    - Files: {protein}_predicted_npx_all_white_europeans.csv
+#    - Files: {protein}_predicted_npx_all_white_british.csv
 #    - Each contains: [participant_id, predicted_npx] for one protein
 #    - Located in Step 7a output directory
 #
 # Output:
-# 1. Combined proteome predictions: combined_predicted_proteome_all_white_europeans.csv
+# 1. Combined proteome predictions: combined_predicted_proteome_all_white_british.csv
 #    - Contains predicted NPX values for ALL proteins and ALL individuals
 #    - Format: [IID, protein1, protein2, protein3, ..., proteinN]
 #    - One row per individual, one column per protein
@@ -29,7 +29,7 @@
 # Argument 2: output_file - Full path to combined output file (including filename)
 #
 # Prerequisites:
-# - Must run AFTER Step 7a (predict_npx_all_ukbb_white_europeans.R)
+# - Must run AFTER Step 7a (predict_npx_all_ukbb_white_british.R)
 # - All protein prediction files must have consistent participant ID formatting
 # - Files should contain the same number of individuals for proper merging
 # ============================================================================
@@ -40,16 +40,19 @@ suppressMessages({
     library(data.table)
 })
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Command line arguments
-args = commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
-    stop("Usage: Rscript combine_npx_files.R <input_directory> <output_file>")
-}
+# Input directory containing individual protein prediction files from Step 7a
+input_dir <- "path_to_step7a_individual_predictions"    # Directory with individual protein predictions from Step 7a
 
-input_dir = args[1]     # Directory with individual protein predictions from Step 7a
-output_file = args[2]   # Full path to combined output file
+# Output file path
+output_file <- "path_to_combined_proteome_predictions.csv"   # Full path to combined output file
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 cat("Starting protein prediction file combination...\n")
 cat("Input directory:", input_dir, "\n")

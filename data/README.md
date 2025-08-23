@@ -5,19 +5,22 @@ This directory contains all data files required for the TransCisPredict analysis
 ## Contents
 
 ### Variant Annotation Files
-**File**: `bim_files_20250823_111518.tar.gz`
-- Compressed archive containing PLINK-format variant information files (.bim)
-- Organized by chromosome and LD blocks for efficient analysis
+**Directory**: `bim_files_per_LD_block/`
+- Contains PLINK-format variant information files (.bim) organized by chromosome and LD blocks
 - **Genome build**: GRCh37/hg19 coordinates
 
-**After extraction**: `bim_files_per_LD_block/bim_files/`
+**Structure**:
 ```
-01/
-├── 01_10583_1892607_unrelated_EUR_42644_individuals.bim
-├── 01_1892607_3582736_unrelated_EUR_42644_individuals.bim
-└── ...
-02/
-└── ...
+bim_files_per_LD_block/
+├── 01/
+│   ├── 01_10583_1892607_unrelated_EUR_42644_individuals.bim
+│   ├── 01_1892607_3582736_unrelated_EUR_42644_individuals.bim
+│   └── ...
+├── 02/
+│   ├── 02_10133_1781022_unrelated_EUR_42644_individuals.bim
+│   └── ...
+├── 03/
+└── ... (continues for all chromosomes)
 ```
 
 **File format** (standard PLINK .bim):
@@ -35,7 +38,7 @@ This directory contains all data files required for the TransCisPredict analysis
 5. Reference allele (A1)  
 6. Alternative allele (A2)
 
-**File naming**: Files contain "EUR" indicating European ancestry subset, which consists of white British participants in this analysis.
+**File naming**: Files contain "EUR" indicating European ancestry subset, which consists of White British participants in this analysis.
 
 ### Prediction Weights
 **Directory**: `weights/`
@@ -47,21 +50,16 @@ This directory contains all data files required for the TransCisPredict analysis
 
 ## Usage
 
-1. **Extract variant files**:
-   ```bash
-   tar -xzf bim_files_20250823_111518.tar.gz
-   ```
+1. **Locate variants**: Use the .bim files to map between rsIDs and genomic positions for variant matching with your genotype data
 
-2. **Locate variants**: Use the .bim files to map between rsIDs and genomic positions for variant matching with your genotype data
-
-3. **Apply weights**: Use prediction weights in conjunction with variant annotations for protein expression prediction
+2. **Apply weights**: Use prediction weights in conjunction with variant annotations for protein expression prediction
 
 ## Technical Details
 
 - **Coverage**: Genome-wide variants organized by LD blocks for both cis and trans effects
 - **Quality Control**: Standard PLINK variant filtering applied
 - **Coordinate System**: GRCh37/hg19 human genome reference
-- **Ancestry**: UK Biobank white British ancestry participants
+- **Ancestry**: UK Biobank White British ancestry participants
 
 ## Weight File Format
 

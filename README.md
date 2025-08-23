@@ -2,27 +2,14 @@
 
 This repository contains the complete analysis pipeline and data for our comprehensive framework to predict protein levels that incorporates both cis and trans genetic variants to facilitate conducting proteome-wide association studies (PWAS) on a biobank scale.
 
-## Project Overview
-
-Genetic effects on complex traits are mediated through protein pathways, making proteome-wide association studies (PWAS) increasingly important for understanding disease etiology. However, many studies lack proteomic data. We developed this comprehensive framework to predict protein levels and enable PWAS in datasets with genomic data but without measured protein levels.
-
-### Key Features
-
-- **Comprehensive Variant Selection**: Incorporates both cis and trans genetic variants across the genome
-- **Multiple Statistical Methods**: Compares BayesR, SuSiE, LASSO, and elastic net approaches
-- **Cross-Validation Optimization**: Selects optimal method for each protein individually
-- **Large-Scale Application**: Designed for biobank-scale prediction in populations without proteomic data
-- **Validated Framework**: Demonstrates strong correlation between predicted and measured protein associations
-
 ## Repository Structure
 
 ```
-manuscript/
+TransCisPredict/
 ├── README.md                    # This file
 ├── data/                        # Data files, annotations, and weights
-│   ├── bim_files_20250823_111518.tar.gz  # Variant annotation files (.bim format)
-│   └── weights/                 # Final prediction weights (to be populated)
-│       └── README.md           # Documentation for prediction weights
+│   ├── bim_files_per_LD_block/  # Variant annotation files (.bim format)
+│   └── weights/                 # Final prediction weights
 └── scripts/                     # Analysis pipeline scripts
     ├── README.md               # Detailed analysis pipeline documentation
     ├── step1_data_processing/  # Raw data processing and QC

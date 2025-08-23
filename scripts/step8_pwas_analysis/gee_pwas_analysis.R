@@ -10,7 +10,7 @@
 #
 # Input:
 # 1. Combined proteome predictions from Step 7b:
-#    - File: combined_predicted_proteome_all_white_europeans.csv
+#    - File: combined_predicted_proteome_all_white_british.csv
 #    - Contains predicted NPX values for all proteins across all individuals
 #    - Format: [IID, protein1, protein2, ..., proteinN]
 #
@@ -34,19 +34,8 @@
 #    - rho: correlation parameter from GEE model
 #
 # Usage Examples:
-# # HDL cholesterol analysis
-# Rscript 250304_gee_pwas_analysis.R phenotypes.csv adj_hdl kinship.kin0 pcs.txt hdl_results.csv gaussian
-# 
-# # Binary trait analysis  
-# Rscript 250304_gee_pwas_analysis.R phenotypes.csv disease_status kinship.kin0 pcs.txt disease_results.csv binomial
-#
-# Command line arguments:
-# Argument 1: pheno_file - CSV file containing phenotype data
-# Argument 2: pheno_col - Column name for the trait/phenotype to analyze
-# Argument 3: kin_file - Kinship matrix file for relatedness correction
-# Argument 4: pc_file - Principal components file for population stratification
-# Argument 5: output_file - Output file path for PWAS results
-# Argument 6: analysis_family - Statistical family: "gaussian" (continuous) or "binomial" (binary)
+# For continuous trait: Set pheno_col <- "adj_hdl", analysis_family <- "gaussian"
+# For binary trait: Set pheno_col <- "disease_status", analysis_family <- "binomial"
 #
 # Prerequisites:
 # - Must run AFTER Step 7b (combine_npx_files.R)
@@ -63,23 +52,26 @@ suppressMessages({
     library(geepack)
 })
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 6) {
-    stop("Usage: Rscript 250304_gee_pwas_analysis.R <pheno_file> <pheno_col> <kin_file> <pc_file> <output_file> <family>")
-}
+# Phenotype and analysis parameters
+pheno_file <- "path_to_phenotype_data.csv"     # Phenotype data file
+pheno_col <- "adj_hdl"                         # Phenotype column name (e.g., "adj_hdl", "disease_status")
+analysis_family <- "gaussian"                  # Statistical family: "gaussian" (continuous) or "binomial" (binary)
 
-pheno_file = args[1]        # Phenotype data file
-pheno_col = args[2]         # Phenotype column name
-kin_file = args[3]          # Kinship matrix file  
-pc_file = args[4]           # Principal components file
-output_file = args[5]       # Output file for results
-analysis_family = args[6]   # Statistical family (gaussian/binomial)
+# Input files - modify for your environment
+proteome_predictions_file <- "path_to_combined_proteome_predictions.csv"  # Step 7b output
+kin_file <- "path_to_kinship_matrix.kin0"      # Kinship matrix file for relatedness correction
+pc_file <- "path_to_principal_components.txt"  # Principal components file for population stratification
 
-# Input paths - modify for your environment
-proteome_predictions_file <- "path_to_combined_proteome_predictions"  # Step 7b output
+# Output file
+output_file <- "path_to_pwas_results.csv"      # Output file for PWAS results
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 cat("Starting PWAS analysis...\n")
 cat("Phenotype file:", pheno_file, "\n")
@@ -159,7 +151,7 @@ df_pheno <- left_join(
     left_join(df_pc, by = join_by(iid))
 
 ## Add protein data to stroke data
-### Inner join effectively filters the stroke dataset to only white Europeans
+### Inner join effectively filters the stroke dataset to only White British
 df_pheno <- inner_join(df_pheno, df_protein, by = join_by(iid))
 rm(df_protein, df_fam, df_kin)
 

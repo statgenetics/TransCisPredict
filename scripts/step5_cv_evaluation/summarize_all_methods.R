@@ -7,6 +7,10 @@
 # methods across all proteins. Unlike Step 5b which identifies the single best
 # method per protein, this script computes detailed performance summaries for
 # BayesR, LASSO, Elastic Net, and SuSiE methods to enable cross-method comparison.
+# 
+# NOTE: This script is OPTIONAL. Step 5b already identifies the best method for
+# each protein. Use this script only if you need detailed performance comparisons
+# across all methods for analysis or manuscript figures.
 #
 # Input:
 # 1. CV prediction accuracy files from Step 5a:
@@ -24,16 +28,13 @@
 #    - Enables comparison of method performance patterns across the proteome
 #
 # Usage Example:
-# Rscript summarize_all_methods.R path_to_prediction_accuracy_files path_to_output_dir
-#
-# Command line arguments:
-# Argument 1: input_dir - Directory containing *_cv_prediction_accuracy.csv files from Step 5a
-# Argument 2: output_dir - Directory to write comprehensive methods summary file
+# Set input_dir and output_dir in configuration section below
 #
 # Prerequisites:
 # - Must run AFTER Step 5a (evaluate_cv_performance.R)
 # - Can be run independently of Step 5b (identify_best_method.R)
 # - Useful for manuscript figures and method performance analysis
+# - OPTIONAL: Step 5b already provides the best method for each protein
 # ============================================================================
 
 # Load required packages
@@ -43,14 +44,13 @@ suppressMessages({
 
 ## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 
-# Command line arguments
-args = commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
-    stop("Usage: Rscript summarize_all_methods.R <input_directory> <output_directory>")
-}
+# Input and output directories
+input_dir <- "path_to_step5a_prediction_accuracy_files/"    # Directory with prediction accuracy files from Step 5a
+output_dir <- "path_to_step5c_output/"                      # Directory to write comprehensive methods summary
 
-input_dir = args[1]      # Directory with prediction accuracy files from Step 5a  
-output_dir = args[2]     # Directory to write comprehensive methods summary
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 prediction_list <- list.files(input_dir, ".csv")
 

@@ -43,7 +43,7 @@
 # - Only includes individuals present in both protein and covariate data
 #
 # Statistical Model:
-# NPX ~ β₀ + β₁×age + β₂×sex + β₃×BMI + Σ(βᵢ×PCᵢ) + ε
+# NPX ~ β₀ + β1×age + β2×sex + β3×age×sex + β4×BMI + Σ(βi×PCi) + ε
 # Residuals = NPX - (predicted values from covariates)
 # ============================================================================
 

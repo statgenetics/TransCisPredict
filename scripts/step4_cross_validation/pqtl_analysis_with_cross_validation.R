@@ -7,7 +7,6 @@
 # methods for predicting protein levels from genetic data. For each protein and
 # genomic region, it trains multiple methods (BayesR, LASSO, Elastic Net, SuSiE) 
 # and generates prediction weights for performance comparison in Step 5.
-# Optionally generates Step 5 job scripts for batch processing systems.
 #
 # Input:
 # 1. Protein residuals from Step 2:
@@ -64,28 +63,26 @@ suppressMessages({
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT  
 # ============================================================================
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 4) {
-    stop("Usage: Rscript pqtl_analysis_with_cross_validation.R <protein_name> <chromosome> <output_directory> <fdr_threshold> [generate_step5_scripts]")
-}
-
-protein_name <- args[1]           # Protein to analyze
-chr_num <- args[2]               # Chromosome (e.g., "01", "02")
-output_dir <- args[3]            # Output directory for weights
-min_q_threshold <- args[4]       # FDR threshold (0.2 for main results)
-generate_step5_scripts <- if(length(args) >= 5) as.logical(args[5]) else FALSE  # Optional: generate Step 5 job scripts
-
-if (is.na(min_q_threshold)) min_q_threshold <- 0.2
+# Protein and chromosome to analyze
+protein_name <- "a1bg"           # Protein to analyze (e.g., "a1bg")
+chr_num <- "01"                  # Chromosome (e.g., "01", "02", "03")
 
 # Analysis parameters
 num_folds <- 5                   # Number of CV folds
 cv_seed <- 1                     # Random seed for reproducibility
+min_q_threshold <- 0.2           # FDR threshold for region selection
 
 # Input paths - modify for your environment
 protein_residuals_dir <- "path_to_save_protein_residuals"     # Step 2 output
 fdr_summaries_dir <- "path_to_fdr_region_summaries"          # Step 3 output  
-genotype_base_path <- "path_to_genotype_data_by_ld_blocks"   # Same as Step 3
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"   # Same as Step 3
+
+# Output directory
+output_dir <- "path_to_save_cv_weights"
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
@@ -103,7 +100,6 @@ cat("Chromosome:", chr_num, "\n")
 cat("FDR threshold:", min_q_threshold, "\n")
 cat("Number of CV folds:", num_folds, "\n")
 cat("Output directory:", output_dir, "\n")
-cat("Generate Step 5 scripts:", generate_step5_scripts, "\n")
 cat("============================================================================\n")
 
 # ============================================================================
@@ -354,58 +350,6 @@ for (region_file in region_list) {
     })
 }
 
-# ============================================================================
-# OPTIONAL: GENERATE STEP 5 JOB SCRIPTS
-# ============================================================================
-
-if (generate_step5_scripts && regions_processed > 0) {
-    cat("\n============================================================================\n")
-    cat("Generating Step 5 Job Scripts\n")
-    cat("============================================================================\n")
-    
-    # Configuration for Step 5 script generation
-    step5_script_dir <- "path_to_step5_scripts_directory"
-    step5_output_dir <- "path_to_step5_output_directory" 
-    step5_log_dir <- "path_to_step5_logs_directory"
-    step4_weights_dir <- output_dir  # Use current output directory as input to Step 5
-    
-    # Create directories if they don't exist
-    for (dir_path in c(step5_script_dir, step5_output_dir, step5_log_dir)) {
-        if (!dir.exists(dir_path)) {
-            dir.create(dir_path, recursive = TRUE)
-        }
-    }
-    
-    # Create Step 5 subdirectories
-    dir.create(file.path(step5_output_dir, "predicted_npx"), showWarnings = FALSE, recursive = TRUE)
-    dir.create(file.path(step5_output_dir, "prediction_accuracy"), showWarnings = FALSE, recursive = TRUE)
-    
-    # Generate SLURM job script for Step 5 analysis
-    job_script_path <- file.path(step5_script_dir, paste0(protein_name, "_step5_prediction.sbatch"))
-    
-    job_script_content <- paste0(
-        "#!/bin/bash\n",
-        "#SBATCH --job-name=predict_npx_", protein_name, "\n",
-        "#SBATCH --mem=15G\n", 
-        "#SBATCH --time=24:00:00\n",
-        "#SBATCH --output=", step5_log_dir, "/", protein_name, "_npx_prediction_%j.out\n",
-        "#SBATCH --error=", step5_log_dir, "/", protein_name, "_npx_prediction_%j.err\n",
-        "\n",
-        "mkdir -p ", step5_output_dir, "\n",
-        "\n",
-        "# Run Step 5 prediction analysis using Step 4 cross-validation weights\n",
-        "Rscript path_to_step5_script/predict_npx_from_cv.R ", protein_name, " ", step4_weights_dir, "/ ", step5_output_dir, 
-        " &> ", step5_log_dir, "/", protein_name, "_npx_prediction.log\n"
-    )
-    
-    # Write job script to file
-    writeLines(job_script_content, job_script_path)
-    
-    cat("Generated Step 5 job script:", basename(job_script_path), "\n")
-    cat("Step 4 weights directory (input to Step 5):", step4_weights_dir, "\n")
-    cat("Step 5 output directory:", step5_output_dir, "\n")
-    cat("Step 5 logs directory:", step5_log_dir, "\n")
-}
 
 # ============================================================================
 # SUMMARY AND COMPLETION
@@ -447,9 +391,4 @@ cat("===========================================================================
 # - These weights are applied to test set genotypes
 # - Performance metrics calculated for each method
 # - Best performing method identified per protein
-#
-# Optional Step 5 Script Generation:
-# - If generate_step5_scripts=TRUE, creates SLURM job scripts for Step 5
-# - Generated scripts use Step 4 weights as input for protein prediction
-# - Parameterized paths must be configured for your batch system environment
 # ============================================================================

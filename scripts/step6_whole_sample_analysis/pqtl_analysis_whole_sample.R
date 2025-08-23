@@ -38,15 +38,6 @@
 #    - Performance metrics on whole sample training
 #    - Format: [method, r2, correlation, rmse, mae]
 #
-# Usage Example (for a1bg protein, chromosome 19):
-# Rscript pqtl_analysis_whole_sample.R a1bg 19 path_to_output 0.2
-#
-# Command line arguments:
-# Argument 1: protein_name - Name of protein (e.g., "a1bg", "APOE")
-# Argument 2: chr_num - Chromosome number (e.g., "19", "01")
-# Argument 3: output_dir - Directory to write final model weights and performance
-# Argument 4: min_q_threshold - FDR threshold for variant inclusion (e.g., 0.2)
-#
 # Prerequisites:
 # - Must run AFTER Step 5b (identify_best_method.R)
 # - Best method file must exist for protein selection
@@ -56,19 +47,29 @@
 rm(list = ls())
 time_1 <- Sys.time()
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 4) {
-    stop("Usage: Rscript pqtl_analysis_whole_sample.R <protein_name> <chr_num> <output_dir> <fdr_threshold>")
-}
+# Protein and chromosome to analyze
+protein_name <- "a1bg"         # Protein name (e.g., "a1bg")
+chr_num <- "19"                # Chromosome number (e.g., "19", "01")
 
-protein_name <- args[1]        # Protein name (e.g., "a1bg", "APOE")
-chr_num <- args[2]             # Chromosome number (e.g., "19", "01")
-output_dir <- args[3]          # Output directory for final weights
-min_q_threshold <- args[4]     # FDR threshold for variant inclusion
+# Analysis parameters
+min_q_threshold <- 0.2         # FDR threshold for variant inclusion
 
+# Input paths - modify for your environment
+protein_residuals_dir <- "path_to_protein_residuals"        # Step 2 output directory
+best_methods_file <- "path_to_best_methods_file"            # Step 5b output file
+fdr_summary_dir <- "path_to_step3_fdr_summaries"           # Step 3 output directory
+plink_path <- "path_to_training_genotype_data"             # Training genotype data directory
+
+# Output directory
+output_dir <- "path_to_step6_final_weights"                # Output directory for final weights
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 ## Load Packages & Scripts
 suppressMessages({
@@ -82,11 +83,6 @@ suppressMessages({
     source("../utilities/pqtl_functions.R")
     source("../utilities/timing_function.R")
 })
-
-# Input paths - modify for your environment
-protein_residuals_dir <- "path_to_protein_residuals"        # Step 2 output directory
-best_methods_file <- "path_to_best_methods_file"            # Step 5b output file
-genotype_base_path <- "path_to_genotype_data_by_chromosome" # Genotype data directory
 
 # Load protein residuals
 cat("Loading protein residuals for", protein_name, "...\n")
@@ -126,21 +122,27 @@ protein_levels <- protein_levels |>
     arrange(participant_id) |>
     drop_na()
 
-# Read in region summary for FDR flatness
-fdr_summary <- fread(paste0(
-    "/home/drl2168/250113_ukbb_proteomics_analysis/250114_fdr_region_summary/",
-    protein_name, "_region_stats_summary.csv"
-))
+# Read in region summary for FDR flatness (Step 3 output)
+fdr_summary_file <- file.path(fdr_summary_dir, paste0(protein_name, "_region_stats_summary.csv"))
+if (!file.exists(fdr_summary_file)) {
+    stop("FDR summary file not found: ", fdr_summary_file)
+}
+fdr_summary <- fread(fdr_summary_file)
 
-# List files in region
+# List files in region using configurable plink_path
+chr_plink_dir <- file.path(plink_path, chr_num)
+if (!dir.exists(chr_plink_dir)) {
+    stop("Chromosome directory not found: ", chr_plink_dir)
+}
+
 region_list <- list.files(
-    path = paste0(
-        "/home/rd2972/private_data/20240323_UKBB_proteomics/20240611_RAP_download/kinship_0.044/split_by_region/",
-        chr_num,
-        "/"
-    ),
-    pattern = ".bim"
+    path = chr_plink_dir,
+    pattern = "\\.bim$"
 )
+
+if (length(region_list) == 0) {
+    stop("No .bim files found in directory: ", chr_plink_dir)
+}
 
 ## Start loop
 for (region in region_list) {
@@ -170,11 +172,8 @@ for (region in region_list) {
 
         # 1. Import the genotype data
         import_start <- Sys.time()
-        plink2r_data <- read_plink(paste0( "/home/rd2972/private_data/20240323_UKBB_proteomics/20240611_RAP_download/kinship_0.044/split_by_region/",
-            chr_num,
-            "/",
-            tools::file_path_sans_ext(region)
-        ))
+        region_path <- file.path(chr_plink_dir, tools::file_path_sans_ext(region))
+        plink2r_data <- read_plink(region_path)
         gen_matrix <- plink2r_data$bed
         rownames(gen_matrix) <- str_extract(rownames(gen_matrix), "(?<=:)(\\d+)")
         rm(plink2r_data)

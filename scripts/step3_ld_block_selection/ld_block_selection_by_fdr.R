@@ -38,7 +38,7 @@
 # - Used in Steps 4-5 to focus analysis on informative regions
 #
 # Statistical Model (per SNP):
-# NPX_residuals ~ age + sex + BMI + PC1-20 + SNP + ε
+# NPX_residuals ~ age + sex + age x sex BMI + PC1-20 + SNP + ε
 # ============================================================================
 
 # Load required packages
@@ -57,19 +57,16 @@ suppressMessages({
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
-    stop("Usage: Rscript ld_block_selection_by_fdr.R <protein_name> <output_directory>")
-}
-
-protein_name <- args[1]
-output_dir <- args[2]
+# Protein to analyze
+protein_name <- "protein_name"  # Name of protein to analyze (e.g., "a1bg")
 
 # Input paths - modify for your environment
 protein_residuals_dir <- "path_to_save_protein_residuals"     # Output from Step 2
 covariate_file <- "path_to_your_covariate_file.csv"         # Same as Step 2
-genotype_base_path <- "path_to_genotype_data_by_ld_blocks"   # LD block genotype files
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"   # LD block genotype files
+
+# Output directory
+output_dir <- "path_to_save_LD_block_results"
 
 # FDR thresholds for region classification
 fdr_threshold_strict <- 0.1   # Stricter threshold
@@ -97,7 +94,7 @@ cat("FDR thresholds:", fdr_threshold_strict, "and", fdr_threshold_liberal, "\n")
 marginal_analysis <- function(snp_name, phenotype_data){
     
     # Build regression formula including all covariates
-    formula_str <- paste0("npx ~ age + sex + bmi + ", 
+    formula_str <- paste0("npx ~ age + sex + age: sex + bmi + ", 
                          paste0("pc", 1:20, collapse = " + "), 
                          " + ", snp_name)
     

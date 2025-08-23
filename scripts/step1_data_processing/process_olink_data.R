@@ -29,6 +29,7 @@
 # Usage:
 # Set input_path to directory containing numbered batch files
 # Set output_dir to directory where individual protein files will be saved
+# Set input_file_template to match your file naming pattern (use {num} as placeholder)
 # ============================================================================
 
 # Load packages and functions
@@ -49,6 +50,10 @@ input_path <- "path_where_you_store_NPX_data_all_proteins"
 # Output directory for individual protein files
 output_dir <- "path_where_you_save_each_protein_file"
 
+# Input file naming pattern - modify this template to match your file naming convention
+# Use {num} as placeholder for the sequential number (will be formatted as 4-digit: 0001, 0002, etc.)
+input_file_template <- "appXXXXX_your_application_ID_olink_instance_0_{num}.csv"
+
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
     dir.create(output_dir, recursive = TRUE)
@@ -64,13 +69,27 @@ time_1 <- Sys.time()
 cat("Starting OLINK proteomics data processing...\n")
 cat("Input directory:", input_path, "\n")
 cat("Output directory:", output_dir, "\n")
+cat("File template:", input_file_template, "\n")
 
-# Loop through numbered batch files (assuming files are numbered 0001-9999)
-# Modify the range (1:12) based on your actual number of batch files
-for (num in sprintf("%04d", 1:12)) {
+# Automatically detect available batch files by listing files in input directory
+# Extract the pattern from the template to match existing files
+file_pattern <- gsub("\\{num\\}", "[0-9]{4}", input_file_template)
+available_files <- list.files(input_path, pattern = file_pattern, full.names = FALSE)
+
+if (length(available_files) == 0) {
+    stop("No files found matching pattern '", file_pattern, "' in directory: ", input_path)
+}
+
+cat("Found", length(available_files), "batch files to process\n")
+
+# Loop through all available batch files
+for (file_name in available_files) {
     
-    # Construct input file path
-    input_file <- file.path(input_path, paste0("app32285_20231207101836_olink_instance_0_", num, ".csv"))
+    # Extract the number from the filename for logging
+    num_match <- regmatches(file_name, regexpr("[0-9]{4}", file_name))
+    
+    # Construct full input file path
+    input_file <- file.path(input_path, file_name)
     
     # Check if file exists before processing
     if (!file.exists(input_file)) {
@@ -78,7 +97,7 @@ for (num in sprintf("%04d", 1:12)) {
         next
     }
     
-    cat("Processing batch file:", num, "\n")
+    cat("Processing batch file:", num_match, "(", file_name, ")\n")
     
     # Load batch data
     df_protein <- fread(input_file)
@@ -88,7 +107,7 @@ for (num in sprintf("%04d", 1:12)) {
         select(-eid) %>%
         names()
     
-    cat("Found", length(protein_list), "proteins in batch", num, "\n")
+    cat("Found", length(protein_list), "proteins in batch", num_match, "\n")
     
     # Process each protein individually
     for (protein in protein_list) {
@@ -106,7 +125,7 @@ for (num in sprintf("%04d", 1:12)) {
         write_csv(df_working, output_file)
     }
     
-    cat("Completed batch", num, "\n")
+    cat("Completed batch", num_match, "\n")
 }
 
 # Calculate and display processing time

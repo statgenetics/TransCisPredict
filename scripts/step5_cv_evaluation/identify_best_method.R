@@ -25,11 +25,7 @@
 #    - best_r2_sd: Standard deviation of R² across CV folds for best method
 #
 # Usage Example:
-# Rscript identify_best_method.R path_to_prediction_accuracy_files path_to_output_dir
-#
-# Command line arguments:
-# Argument 1: input_dir - Directory containing *_cv_prediction_accuracy.csv files from Step 5a
-# Argument 2: output_dir - Directory to write best methods summary file
+# Set input_dir and output_dir in configuration section below
 #
 # Prerequisites:
 # - Must run AFTER Step 5a (evaluate_cv_performance.R)
@@ -43,14 +39,13 @@ suppressMessages({
 
 ## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 
-# Command line arguments
-args = commandArgs(trailingOnly = TRUE)
-if (length(args) < 2) {
-    stop("Usage: Rscript identify_best_method.R <input_directory> <output_directory>")
-}
+# Input and output directories
+input_dir <- "path_to_step5a_prediction_accuracy_files/"    # Directory with prediction accuracy files from Step 5a
+output_dir <- "path_to_step5b_output/"                      # Directory to write best methods summary
 
-input_dir = args[1]      # Directory with prediction accuracy files from Step 5a
-output_dir = args[2]     # Directory to write best methods summary
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 prediction_list <- list.files(input_dir, ".csv")
 

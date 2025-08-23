@@ -2,7 +2,26 @@
 
 This directory contains the complete analysis pipeline for the TransCisPredict framework - a comprehensive approach to protein expression imputation that incorporates both cis and trans genetic variants for proteome-wide association studies (PWAS) using UK Biobank Pharma Proteomics Project data. The pipeline is organized into 8 sequential steps, each contained in its own directory with self-contained R scripts.
 
-## Pipeline Overview
+## Pipeline Overview and Usage
+
+### Requirements and Setup
+
+**Required R packages**: tidyverse, data.table, plink2R, pecotmr, geepack, broom.mixed, rsample
+
+### Running the Pipeline
+
+1. **Sequential Execution**: Run steps 1-8 in order, as each step depends on outputs from previous steps.
+
+2. **Path Configuration**: Modify placeholder paths in each script's configuration section for your environment:
+   - Input data directories
+   - Output directories  
+   - Genotype data locations
+   - Reference files
+
+3. **Command Line Usage**: Most scripts accept command line arguments. See individual script headers for specific usage examples.
+
+
+### Pipeline Steps
 
 ### Step 1: Data Processing
 **Directory**: `step1_data_processing/`
@@ -46,18 +65,18 @@ Trains final prediction models using the complete dataset and optimal method ide
 ### Step 7: Population Prediction
 **Directory**: `step7_population_prediction/`
 **Scripts**:
-- `predict_npx_all_ukbb_white_europeans.R` - Predicts protein levels for target population
+- `predict_npx_all_ukbb_white_british.R` - Predicts protein levels for target population
 - `combine_npx_files.R` - Combines individual protein predictions into final matrix
 
 Applies trained cis+trans models to predict protein levels for UK Biobank individuals without measured proteomic data.
 
 ### Step 8: PWAS Analysis  
 **Directory**: `step8_pwas_analysis/`
-**Script**: `250304_gee_pwas_analysis.R`
+**Script**: `gee_pwas_analysis.R`
 
 Performs proteome-wide association studies using generalized estimating equations to test associations between predicted proteins and complex traits.
 
-## Utilities
+### Utilities
 
 **Directory**: `utilities/`
 **Scripts**:
@@ -66,51 +85,5 @@ Performs proteome-wide association studies using generalized estimating equation
 - `timing_function.R` - Runtime calculation utilities
 
 Contains common functions and method implementations used throughout the TransCisPredict pipeline.
-
-## Data Files
-
-**Directory**: `../data/`
-**Contents**:
-- `weights/` - Final prediction weights for each protein from Step 6
-  - `{protein_name}_final_weights.csv` - Weight files for individual proteins
-  - `variants.bim` - Variant annotation file mapping variant IDs to genomic positions and rsIDs
-- `bim_files_20250823_111518.tar.gz` - Compressed variant annotation files
-
-The data directory contains trained protein prediction weights and variant annotations that can be applied to external genotype data for protein expression prediction.
-
----
-
-## Usage Instructions
-
-### Running the Pipeline
-
-1. **Sequential Execution**: Run steps 1-8 in order, as each step depends on outputs from previous steps.
-
-2. **Path Configuration**: Modify placeholder paths in each script's configuration section for your environment:
-   - Input data directories
-   - Output directories  
-   - Genotype data locations
-   - Reference files
-
-3. **Command Line Usage**: Most scripts accept command line arguments. See individual script headers for specific usage examples.
-
-4. **Example Workflow**:
-   ```bash
-   # Step 1: Process raw data
-   Rscript step1_data_processing/process_olink_data.R
-   
-   # Step 2: Generate residuals (example for APOE protein)
-   Rscript step2_covariate_regression/regress_npx_covariates_residuals.R APOE
-   
-   # Step 4: Cross-validation (example for APOE)
-   Rscript step4_cross_validation/pqtl_analysis_with_cross_validation.R APOE input_dir output_dir 0.2
-   
-   # Continue through remaining steps...
-   ```
-
-### Requirements
-
-- **R packages**: tidyverse, data.table, plink2R, pecotmr, geepack, broom.mixed, rsample
-- **Computing resources**: Memory requirements vary by step
 
 This pipeline provides a complete framework for protein expression imputation and proteome-wide association studies that incorporates both cis and trans genetic variants for improved prediction performance.

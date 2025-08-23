@@ -4,7 +4,7 @@
 # 
 # Purpose:
 # This script generates protein expression predictions for the entire UK Biobank
-# white European cohort using final model weights from Step 6. It applies trained
+# White British cohort using final model weights from Step 6. It applies trained
 # pQTL models to genotype data to predict protein levels for all individuals,
 # creating the foundational dataset for proteome-wide association studies (PWAS).
 #
@@ -15,23 +15,26 @@
 #    - Located in Step 6 output directory
 #
 # 2. Population genotype data:
-#    - PLINK format files (.bed/.bim/.fam) for UK Biobank white Europeans
+#    - PLINK format files (.bed/.bim/.fam) for UK Biobank White British
 #    - Complete genotype dataset for target prediction population
 #    - Organized by LD blocks matching training data structure
+#    - Path specified as command line argument (base path without region suffix)
 #
 # Output:
-# 1. Predicted protein levels: {protein}_predicted_npx_all_white_europeans.csv
+# 1. Predicted protein levels: {protein}_predicted_npx_all_white_british.csv
 #    - Contains predicted NPX values for all individuals in target population
 #    - Format: [participant_id, predicted_npx]
 #    - Used as input for PWAS analysis in Step 8
 #
 # Usage Example (for a1bg protein):
-# Rscript predict_npx_all_ukbb_white_europeans.R a1bg path_to_step6_weights path_to_output
+# Rscript predict_npx_all_ukbb_white_british.R a1bg path_to_step6_weights path_to_output path_to_genotype_base
 #
 # Command line arguments:
-# Argument 1: protein_name - Name of protein to predict (e.g., "a1bg", "APOE")
+# Argument 1: protein_name - Name of protein to predict (e.g., "a1bg")
 # Argument 2: input_dir - Directory containing final weights from Step 6
 # Argument 3: output_dir - Directory to write population predictions
+# Argument 4: genotype_path - Base path to population genotype data (without region suffix)
+#             Script will append "_{region}" to construct full PLINK file paths
 #
 # Prerequisites:
 # - Must run AFTER Step 6 (whole sample pQTL analysis)
@@ -45,23 +48,26 @@
 rm(list = ls())
 time_1 <- Sys.time()
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 3) {
-    stop("Usage: Rscript predict_npx_all_ukbb_white_europeans.R <protein_name> <weights_dir> <output_dir>")
-}
+# Protein to analyze
+protein_name <- "a1bg"     # Protein name (e.g., "a1bg")
 
-protein_name <- args[1]    # Protein name (e.g., "a1bg", "APOE")
-input_dir <- args[2]       # Directory with final weights from Step 6
-output_dir <- args[3]      # Output directory for predictions
+# Input paths - modify for your environment
+input_dir <- "path_to_step6_final_weights"               # Directory with final weights from Step 6
+genotype_path <- "path_to_population_genotype_data"      # Base path to population genotype data (without region suffix)
+
+# Output directory
+output_dir <- "path_to_step7_population_predictions"     # Output directory for predictions
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 # Start time to later measure total run time
 time_1 <- Sys.time()
-
-# Input paths - modify for your environment
-population_genotype_path <- "path_to_population_genotype_data"  # UK Biobank white Europeans genotypes
 
 # Load packages
 suppressMessages({
@@ -79,6 +85,7 @@ dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 cat("Starting protein prediction for", protein_name, "...\n")
 cat("Weights directory:", input_dir, "\n")
 cat("Output directory:", output_dir, "\n")
+cat("Genotype path:", genotype_path, "\n")
 
 # Find final weight files for this protein
 post_weights_list <- list.files(input_dir, pattern = paste0(protein_name, ".*posterior_weights\\.csv$"))
@@ -89,8 +96,17 @@ if (length(post_weights_list) == 0) {
 
 cat("Found", length(post_weights_list), "weight files for", protein_name, "\n")
 
-# Initialize output - adjust population size as needed
-population_size <- 407917  # UK Biobank white Europeans sample size
+# Determine population size from .fam file
+# Read the first available genotype file to get population size
+first_weight_file <- post_weights_list[1]
+first_region <- str_extract(first_weight_file, paste0("(?<=", protein_name, "_)[:graph:]+(?=_post)"))
+temp_plink_data <- read_plink(paste0(genotype_path, "_", first_region))
+population_size <- nrow(temp_plink_data$fam)
+rm(temp_plink_data)  # Clean up temporary data
+
+cat("Population size determined from .fam file:", population_size, "\n")
+
+# Initialize output 
 results <- vector(length = population_size)
 
 ## PART 3: REGION CONTRIBUTION
@@ -109,9 +125,7 @@ for (file in post_weights_list){
     rownames(weights_matrix) <- weights$variant_id
     
     # Load in and prepare genotype
-    plink2r_data <- read_plink(paste0( 
-            "/mnt/vast/hpc/csg/NotBackedUp/rd2972/20240323_UKBB_proteomics/20240909_UKBB_white_Europeans_407917_individuals/genotyped_variants/",
-            "UKBB_white_Europeans_407917_individuals_", region))
+    plink2r_data <- read_plink(paste0(genotype_path, "_", region))
     
     # Extract genotype matrix and remove plink data
     gen_matrix <- plink2r_data$bed
@@ -147,7 +161,7 @@ output <- tibble(
     FID = fid_vec,
     npx = results[,1])
 
-write_csv(output, file = paste0(output_dir, protein_name, "_npx_ukb_407917_white_europeans.csv"))
+write_csv(output, file = paste0(output_dir, protein_name, "_npx_ukb_407917_white_british.csv"))
 
 # Print time of calculation
 time_2 <- Sys.time()

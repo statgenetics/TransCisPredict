@@ -37,12 +37,7 @@
 #    - One row per CV fold, columns for each method's performance metrics
 #
 # Usage Example (for a1bg protein):
-# Rscript evaluate_cv_performance.R a1bg path_to_step4_cv_weights path_to_step5_output
-#
-# Command line arguments:
-# Argument 1: protein_name - Name of protein to evaluate (e.g., "a1bg", "APOE")
-# Argument 2: input_dir - Directory containing CV weights from Step 4 
-# Argument 3: output_dir - Directory to write evaluation results
+# Set protein_name <- "a1bg" in configuration section below
 #
 # Prerequisites:
 # - Must run AFTER Step 4 (cross-validation analysis)
@@ -51,22 +46,23 @@
 
 ## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 
-# Command line arguments
-args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 3) {
-    stop("Usage: Rscript evaluate_cv_performance.R <protein_name> <weights_directory> <output_directory>")
-}
+# Protein to evaluate
+protein_name <- "a1bg"            # Protein to evaluate (e.g., "a1bg")
 
-protein_name <- args[1]           # Protein to evaluate (e.g., "APOE")
-input_dir <- args[2]              # Directory with CV weights from Step 4
-output_dir <- args[3]             # Directory to write results
-
-# Input paths - modify for your environment  
+# Input paths - modify for your environment
+input_dir <- "path_to_step4_cv_weights"                      # Directory with CV weights from Step 4
 protein_residuals_dir <- "path_to_save_protein_residuals"     # Step 2 output
-genotype_base_path <- "path_to_genotype_data_by_ld_blocks"    # Genotype data
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"    # Genotype data
+
+# Output directory
+output_dir <- "path_to_step5_evaluation_results"             # Directory to write results
 
 # Analysis parameters
 num_folds <- 5                    # Number of CV folds (must match Step 4)
+
+# ============================================================================
+# SCRIPT EXECUTION
+# ============================================================================
 
 # Create output directories if they don't exist
 dir.create(file.path(output_dir, "predicted_npx"), showWarnings = FALSE, recursive = TRUE)
