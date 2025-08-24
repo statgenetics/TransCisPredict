@@ -1,75 +1,55 @@
 # ============================================================================
 # Step 2: Covariate Regression for Protein Expression
 # ============================================================================
-# 
-# Purpose:
-# This script removes covariate effects from protein expression levels by 
-# performing linear regression and extracting residuals. This generates 
-# covariate-adjusted protein phenotypes for genetic analysis while preserving 
-# the genetic signal.
+# Removes covariate effects from protein expression levels by performing linear 
+# regression and extracting residuals. Generates covariate-adjusted protein 
+# phenotypes for genetic analysis while preserving genetic signal.
 #
-# Input:
-# 1. Individual protein files from Step 1:
-#    - Directory containing files: {protein_name}_npx_instance_0_ukb_ppp.csv
-#    - Each file format: [eid, protein_expression_value]
-#    - Generated from Step 1 data processing
-#
-# 2. Covariate file:
-#    - CSV file containing participant covariates
-#    - Required columns: IID (participant ID), age, sex, bmi, pc1-pc20
-#    - Additional technical/batch covariates as needed
-#    - Format: [IID, age, sex, bmi, pc1, pc2, ..., pc20, other_covariates]
-#
-# Output:
-# 1. Residual protein expression files:
-#    - Files: {protein_name}_residual_npx.csv
-#    - Format: [eid, npx_residuals]
-#    - These residuals are the key input for Steps 4-6 (genetic analysis)
-#
-# 2. Covariate coefficient files:
-#    - Files: {protein_name}_covariate_coefficients.csv  
-#    - Format: [term, estimate]
-#    - Contains regression coefficients for each covariate
-#
-# 3. Model summary file:
-#    - File: protein_covariate_r2_summary.csv
-#    - Format: [protein, r_squared]
-#    - R² values indicating covariate explanatory power
-#
-# Processing:
-# - For each protein, performs linear regression: protein ~ age + sex + bmi + pc1-20
-# - Extracts residuals as covariate-adjusted phenotype
-# - Saves model coefficients and fit statistics
-# - Only includes individuals present in both protein and covariate data
-#
-# Statistical Model:
-# NPX ~ β₀ + β1×age + β2×sex + β3×age×sex + β4×BMI + Σ(βi×PCi) + ε
+# Statistical Model: NPX ~ β₀ + β1×age + β2×sex + β3×age×sex + β4×BMI + Σ(βi×PCi) + ε
 # Residuals = NPX - (predicted values from covariates)
-# ============================================================================
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(tidyverse)
     library(data.table)
-    library(broom)      # For model output formatting
-    library(janitor)    # For column name cleaning
+    library(broom)
+    library(janitor)
 })
 
 # ============================================================================
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Input directory containing individual protein files from Step 1
-protein_files_dir <- "path_where_you_save_each_protein_file"  # Output from Step 1
+# INPUT 1: Individual protein files from Step 1
+# - Directory containing files: {protein_name}_npx_instance_0_ukb_ppp.csv
+# - Each file format: [eid, protein_expression_value]
+# - Generated from Step 1 data processing
+protein_files_dir <- "path_where_you_save_each_protein_file"
 
-# Covariate file path
-# File should contain: IID, age, sex, bmi, pc1, pc2, ..., pc20, other_covariates
+# INPUT 2: Covariate file
+# - CSV file containing participant covariates
+# - Required columns: IID (participant ID), age, sex, bmi, pc1-pc20
+# - Format: [IID, age, sex, bmi, pc1, pc2, ..., pc20, other_covariates]
+# - Model will include: age + sex + age×sex + BMI + PC1-20
 covariate_file <- "path_to_your_covariate_file.csv"
 
-# Output directories for results
+# OUTPUT 1: Residual protein expression files (key input for Steps 4-6)
+# - Files: {protein_name}_residual_npx.csv
+# - Format: [eid, npx_residuals]
 output_residuals_dir <- "path_to_save_protein_residuals"
+
+# OUTPUT 2: Covariate coefficient files
+# - Files: {protein_name}_covariate_coefficients.csv  
+# - Format: [term, estimate, std.error, p.value]
 output_coefficients_dir <- "path_to_save_covariate_coefficients"
+
+# OUTPUT 3: Model summary file
+# - File: protein_covariate_r2_summary.csv
+# - Format: [protein, r_squared, n_individuals]
 output_summary_file <- "protein_covariate_r2_summary.csv"
+
+# END CONFIGURATION
+# ============================================================================
 
 # Create output directories if they don't exist
 if (!dir.exists(output_residuals_dir)) {
@@ -272,35 +252,3 @@ cat("- Protein residuals (", length(processed_proteins), "files ):", output_resi
 cat("- Covariate coefficients (", length(processed_proteins), "files ):", output_coefficients_dir, "\n")
 cat("============================================================================\n")
 
-# ============================================================================
-# EXPECTED OUTPUT FORMATS
-# ============================================================================
-#
-# 1. Residual files: {protein_name}_residual_npx.csv
-#    Format: eid, npx_residuals
-#    Example:
-#    eid,npx_residuals
-#    1000001,0.2345
-#    1000002,-0.1891
-#    1000003,0.7834
-#
-# 2. Coefficient files: {protein_name}_covariate_coefficients.csv
-#    Format: term, estimate, std.error, p.value
-#    Example:
-#    term,estimate,std.error,p.value
-#    (Intercept),5.234,0.123,2.3e-45
-#    age,0.012,0.002,1.2e-08
-#    sex,-0.456,0.089,3.4e-07
-#
-# 3. Summary file: protein_covariate_r2_summary.csv
-#    Format: protein, r_squared, n_individuals
-#    Example:
-#    protein,r_squared,n_individuals
-#    PROTEIN1,0.234,42477
-#    PROTEIN2,0.156,42477
-#
-# Quality control notes:
-# - Residuals are ready for genetic analysis (Steps 4-6)
-# - Only overlapping individuals between protein and covariate data included
-# - Model includes age, sex, BMI, PCs 1-20, and age*sex interaction
-# ============================================================================

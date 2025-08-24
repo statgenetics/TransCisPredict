@@ -1,52 +1,42 @@
 # ============================================================================
 # Step 5c: Summarize All Cross-Validation Methods (Comprehensive Analysis)
 # ============================================================================
-# 
-# Purpose:
-# This script provides comprehensive performance metrics for ALL statistical 
-# methods across all proteins. Unlike Step 5b which identifies the single best
-# method per protein, this script computes detailed performance summaries for
-# BayesR, LASSO, Elastic Net, and SuSiE methods to enable cross-method comparison.
+# Provides comprehensive performance metrics for ALL statistical methods across 
+# all proteins. Unlike Step 5b which identifies the single best method per protein, 
+# this script computes detailed performance summaries for BayesR, LASSO, Elastic 
+# Net, and SuSiE methods to enable cross-method comparison.
 # 
 # NOTE: This script is OPTIONAL. Step 5b already identifies the best method for
 # each protein. Use this script only if you need detailed performance comparisons
 # across all methods for analysis or manuscript figures.
-#
-# Input:
-# 1. CV prediction accuracy files from Step 5a:
-#    - Files: {protein}_cv_prediction_accuracy.csv
-#    - Contains performance metrics for all methods across CV folds
-#    - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
-#    - Located in prediction_accuracy/ subdirectory from Step 5a output
-#
-# Output:
-# 1. Comprehensive methods summary: all_methods_wide_by_cv_for_protein.csv
-#    - Performance metrics for ALL methods across all proteins
-#    - Format: [protein, method1_avg_r2, method1_sd_r2, method1_avg_corr, method2_avg_r2, ...]
-#    - Contains mean R², standard deviation R², and mean correlation for each method
-#    - One row per protein, columns for each method's performance metrics
-#    - Enables comparison of method performance patterns across the proteome
-#
-# Usage Example:
-# Set input_dir and output_dir in configuration section below
-#
-# Prerequisites:
-# - Must run AFTER Step 5a (evaluate_cv_performance.R)
-# - Can be run independently of Step 5b (identify_best_method.R)
-# - Useful for manuscript figures and method performance analysis
-# - OPTIONAL: Step 5b already provides the best method for each protein
-# ============================================================================
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(tidyverse)
 })
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Input and output directories
-input_dir <- "path_to_step5a_prediction_accuracy_files/"    # Directory with prediction accuracy files from Step 5a
-output_dir <- "path_to_step5c_output/"                      # Directory to write comprehensive methods summary
+# INPUT: CV prediction accuracy files from Step 5a
+# - Files: {protein}_cv_prediction_accuracy.csv
+# - Contains performance metrics for all methods across CV folds
+# - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
+# - Located in prediction_accuracy/ subdirectory from Step 5a output
+input_dir <- "path_to_step5a_prediction_accuracy_files/"
+
+# OUTPUT: Comprehensive methods summary
+# - File: all_methods_wide_by_cv_for_protein.csv
+# - Performance metrics for ALL methods across all proteins
+# - Format: [protein, method1_avg_r2, method1_sd_r2, method1_avg_corr, method2_avg_r2, ...]
+# - Contains mean R², standard deviation R², and mean correlation for each method
+# - One row per protein, columns for each method's performance metrics
+# - Enables comparison of method performance patterns across the proteome
+output_dir <- "path_to_step5c_output/"
+
+# END CONFIGURATION
+# ============================================================================
 
 # ============================================================================
 # SCRIPT EXECUTION

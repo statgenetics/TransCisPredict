@@ -1,73 +1,13 @@
 # ============================================================================
-# Step 7a: Population-Level Protein Prediction
+# Step 7b: Population-Level Protein Prediction
 # ============================================================================
-# 
-# Purpose:
-# This script generates protein expression predictions for the entire UK Biobank
-# White British cohort using final model weights from Step 6. It applies trained
-# pQTL models to genotype data to predict protein levels for all individuals,
-# creating the foundational dataset for proteome-wide association studies (PWAS).
+# Generates protein expression predictions for the entire UK Biobank White British 
+# cohort using final model weights from Step 6. Applies trained pQTL models to 
+# genotype data to predict protein levels for all individuals, creating the 
+# foundational dataset for proteome-wide association studies (PWAS).
 #
-# Input:
-# 1. Final model weights from Step 6:
-#    - Files: {protein}_{chr}_posterior_weights.csv 
-#    - Contains trained weights from best method on whole sample
-#    - Located in Step 6 output directory
-#
-# 2. Population genotype data:
-#    - PLINK format files (.bed/.bim/.fam) for UK Biobank White British
-#    - Complete genotype dataset for target prediction population
-#    - Organized by LD blocks matching training data structure
-#    - Path specified as command line argument (base path without region suffix)
-#
-# Output:
-# 1. Predicted protein levels: {protein}_predicted_npx_all_white_british.csv
-#    - Contains predicted NPX values for all individuals in target population
-#    - Format: [participant_id, predicted_npx]
-#    - Used as input for PWAS analysis in Step 8
-#
-# Usage Example (for a1bg protein):
-# Rscript predict_npx_all_ukbb_white_british.R a1bg path_to_step6_weights path_to_output path_to_genotype_base
-#
-# Command line arguments:
-# Argument 1: protein_name - Name of protein to predict (e.g., "a1bg")
-# Argument 2: input_dir - Directory containing final weights from Step 6
-# Argument 3: output_dir - Directory to write population predictions
-# Argument 4: genotype_path - Base path to population genotype data (without region suffix)
-#             Script will append "_{region}" to construct full PLINK file paths
-#
-# Prerequisites:
-# - Must run AFTER Step 6 (whole sample pQTL analysis)
-# - Final model weights must exist for the specified protein
-# - Population genotype data must be available and formatted consistently
-#
+# Prerequisites: Must run AFTER Step 6
 # Note: This step requires substantial memory (50-100GB) for large-scale prediction
-# ============================================================================
-
-# Clear environment and record start time
-rm(list = ls())
-time_1 <- Sys.time()
-
-# ============================================================================
-# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
-# ============================================================================
-
-# Protein to analyze
-protein_name <- "a1bg"     # Protein name (e.g., "a1bg")
-
-# Input paths - modify for your environment
-input_dir <- "path_to_step6_final_weights"               # Directory with final weights from Step 6
-genotype_path <- "path_to_population_genotype_data"      # Base path to population genotype data (without region suffix)
-
-# Output directory
-output_dir <- "path_to_step7_population_predictions"     # Output directory for predictions
-
-# ============================================================================
-# SCRIPT EXECUTION
-# ============================================================================
-
-# Start time to later measure total run time
-time_1 <- Sys.time()
 
 # Load packages
 suppressMessages({
@@ -75,9 +15,43 @@ suppressMessages({
     library(data.table)
     library(plink2R)
     library(rsample)
-    source("../utilities/pqtl_functions.R")
-    source("../utilities/timing_function.R")
+    source("./utilities/pqtl_functions.R")
+    source("./utilities/timing_function.R")
 })
+
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+
+# ANALYSIS PARAMETER
+protein_name <- "a1bg"     # Protein name (e.g., "a1bg")
+
+# INPUT 1: Final model weights from Step 6
+# - Files: {protein}_{chr}_posterior_weights.csv 
+# - Contains trained weights from best method on whole sample
+input_dir <- "path_to_step6_final_weights"
+
+# INPUT 2: Population genotype data
+# - PLINK format files (.bed/.bim/.fam) for UK Biobank White British
+# - Complete genotype dataset for target prediction population
+# - Organized by LD blocks matching training data structure
+# - Base path to population genotype data (without region suffix)
+# - Script will append "_{region}" to construct full PLINK file paths
+genotype_path <- "path_to_population_genotype_data"
+
+# OUTPUT: Predicted protein levels
+# - File: {protein}_predicted_npx_all_white_british.csv
+# - Contains predicted NPX values for all individuals in target population
+# - Format: [participant_id, predicted_npx]
+# - Used as input for PWAS analysis in Step 8
+output_dir <- "path_to_step7_population_predictions"
+
+# END CONFIGURATION
+# ============================================================================
+
+# Clear environment and record start time
+rm(list = ls()[!ls() %in% c("protein_name", "input_dir", "genotype_path", "output_dir")])
+time_1 <- Sys.time()
 
 # Create output directory
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)

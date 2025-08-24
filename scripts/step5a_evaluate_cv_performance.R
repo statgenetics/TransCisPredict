@@ -1,75 +1,12 @@
 # ============================================================================
 # Step 5a: Cross-Validation Performance Evaluation 
 # ============================================================================
-# 
-# Purpose:
-# This script evaluates the performance of cross-validation results from Step 4.
-# For each protein, it applies the trained weights from each CV fold to the 
-# corresponding held-out test data and computes prediction accuracy metrics.
-# This provides evaluation of how well each statistical method (BayesR, LASSO, 
-# Elastic Net, SuSiE) performed during cross-validation.
+# Evaluates the performance of cross-validation results from Step 4. For each 
+# protein, applies the trained weights from each CV fold to the corresponding 
+# held-out test data and computes prediction accuracy metrics. Provides evaluation 
+# of how well each statistical method performed during cross-validation.
 #
-# Input:
-# 1. CV weights from Step 4:
-#    - Files: {protein}_{region}_posterior_weights.csv
-#    - Contains trained weights for all methods and CV folds
-#    - Located in CV weights output directory from Step 4
-#
-# 2. Protein residuals from Step 2:  
-#    - Files: {protein_name}_residual_npx.csv
-#    - Covariate-adjusted NPX residuals for comparison with predictions
-#    - Located in protein residuals directory from Step 2
-#
-# 3. Genotype data:
-#    - PLINK format files (.bed/.bim/.fam) by LD blocks
-#    - Same genotype data used in Steps 3-4
-#    - Used to generate predictions for held-out test individuals
-#
-# Output:
-# 1. Predicted NPX files: predicted_npx/{protein}_predicted_npx_from_covar_impute_missing_geno_cv{fold}.csv
-#    - Contains predicted protein levels for each CV fold and statistical method
-#    - Format: [eid, method1_weights, method2_weights, ...]
-#    - One file per CV fold (cv1, cv2, cv3, cv4, cv5)
-#
-# 2. Accuracy metrics file: prediction_accuracy/{protein}_cv_prediction_accuracy.csv
-#    - Performance metrics: correlation, R², adjusted R², RMSE, MAE, p-value
-#    - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
-#    - One row per CV fold, columns for each method's performance metrics
-#
-# Usage Example (for a1bg protein):
-# Set protein_name <- "a1bg" in configuration section below
-#
-# Prerequisites:
-# - Must run AFTER Step 4 (cross-validation analysis)
-# - Must run BEFORE Step 5b (identify_best_method.R) and 5c (summarize_all_methods.R)
-# ============================================================================
-
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
-
-# Protein to evaluate
-protein_name <- "a1bg"            # Protein to evaluate (e.g., "a1bg")
-
-# Input paths - modify for your environment
-input_dir <- "path_to_step4_cv_weights"                      # Directory with CV weights from Step 4
-protein_residuals_dir <- "path_to_save_protein_residuals"     # Step 2 output
-genotype_base_path <- "path_to_genotype_data_by_LD_blocks"    # Genotype data
-
-# Output directory
-output_dir <- "path_to_step5_evaluation_results"             # Directory to write results
-
-# Analysis parameters
-num_folds <- 5                    # Number of CV folds (must match Step 4)
-
-# ============================================================================
-# SCRIPT EXECUTION
-# ============================================================================
-
-# Create output directories if they don't exist
-dir.create(file.path(output_dir, "predicted_npx"), showWarnings = FALSE, recursive = TRUE)
-dir.create(file.path(output_dir, "prediction_accuracy"), showWarnings = FALSE, recursive = TRUE)
-
-# Start time to later measure total run time
-time_1 <- Sys.time()
+# Prerequisites: Must run AFTER Step 4 and BEFORE Steps 5b-5c
 
 # Load packages
 suppressMessages({
@@ -77,9 +14,54 @@ suppressMessages({
     library(data.table)
     library(plink2R)
     library(rsample)
-    source("../utilities/pqtl_functions.R")
-    source("../utilities/timing_function.R")
+    source("./utilities/pqtl_functions.R")
+    source("./utilities/timing_function.R")
 })
+
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+
+# ANALYSIS PARAMETERS
+protein_name <- "a1bg"            # Protein to evaluate (e.g., "a1bg")
+num_folds <- 5                    # Number of CV folds (must match Step 4)
+
+# INPUT 1: CV weights from Step 4
+# - Files: {protein}_{region}_posterior_weights.csv
+# - Contains trained weights for all methods and CV folds
+input_dir <- "path_to_step4_cv_weights"
+
+# INPUT 2: Protein residuals from Step 2
+# - Files: {protein_name}_residual_npx.csv
+# - Covariate-adjusted NPX residuals for comparison with predictions
+protein_residuals_dir <- "path_to_save_protein_residuals"
+
+# INPUT 3: Genotype data
+# - PLINK format files (.bed/.bim/.fam) by LD blocks
+# - Same genotype data used in Steps 3-4
+# - Used to generate predictions for held-out test individuals
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"
+
+# OUTPUT 1: Predicted NPX files
+# - Files: predicted_npx/{protein}_predicted_npx_from_covar_impute_missing_geno_cv{fold}.csv
+# - Contains predicted protein levels for each CV fold and statistical method
+# - Format: [eid, method1_weights, method2_weights, ...]
+# - One file per CV fold (cv1, cv2, cv3, cv4, cv5)
+# OUTPUT 2: Accuracy metrics file
+# - File: prediction_accuracy/{protein}_cv_prediction_accuracy.csv
+# - Performance metrics: correlation, R², adjusted R², RMSE, MAE, p-value
+# - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
+output_dir <- "path_to_step5_evaluation_results"
+
+# END CONFIGURATION
+# ============================================================================
+
+# Create output directories if they don't exist
+dir.create(file.path(output_dir, "predicted_npx"), showWarnings = FALSE, recursive = TRUE)
+dir.create(file.path(output_dir, "prediction_accuracy"), showWarnings = FALSE, recursive = TRUE)
+
+# Start timing
+time_1 <- Sys.time()
 
 ## PART 2: LOAD PROTEIN RESIDUALS
 cat("Loading protein residuals for", protein_name, "...\n")

@@ -1,83 +1,72 @@
 # ============================================================================
 # Step 6: Whole Sample pQTL Analysis
 # ============================================================================
-# 
-# Purpose:
-# This script performs protein quantitative trait loci (pQTL) analysis using the
-# entire sample (no cross-validation). It applies the best-performing statistical
-# method identified in Step 5b to train final models on all available data for
+# Performs protein quantitative trait loci (pQTL) analysis using the entire 
+# sample (no cross-validation). Applies the best-performing statistical method 
+# identified in Step 5b to train final models on all available data for 
 # subsequent protein prediction and PWAS analysis.
 #
-# Input:
-# 1. Protein residuals from Step 2:
-#    - Files: {protein_name}_residual_npx.csv
-#    - Covariate-adjusted NPX residuals for genetic analysis
-#    - Located in protein residuals directory from Step 2
-#
-# 2. Best methods from Step 5b:
-#    - File: best_method_by_cv_for_protein.csv
-#    - Contains optimal method for each protein based on CV performance
-#    - Format: [protein, best_method, best_avg_r2, avg_cv_corr, best_r2_sd]
-#
-# 3. Genotype data:
-#    - PLINK format files (.bed/.bim/.fam) by chromosome
-#    - Same genotype data used in previous steps
-#    - Chromosome-specific analysis for computational efficiency
-#
-# 4. LD block and variant selection:
-#    - FDR threshold for variant inclusion
-#    - Based on Step 3 LD block selection results
-#
-# Output:
-# 1. Final model weights: {protein}_{chr}_final_weights.csv
-#    - Contains trained weights from best method on whole sample
-#    - Format: [variant_id, weight_value]
-#    - Used for protein prediction in Steps 7-8
-#
-# 2. Model performance: {protein}_{chr}_whole_sample_performance.csv
-#    - Performance metrics on whole sample training
-#    - Format: [method, r2, correlation, rmse, mae]
-#
-# Prerequisites:
-# - Must run AFTER Step 5b (identify_best_method.R)
-# - Best method file must exist for protein selection
-# ============================================================================
+# Prerequisites: Must run AFTER Step 5b
 
-# Clear environment and record start time
-rm(list = ls())
-time_1 <- Sys.time()
-
-# ============================================================================
-# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
-# ============================================================================
-
-# Protein and chromosome to analyze
-protein_name <- "a1bg"         # Protein name (e.g., "a1bg")
-chr_num <- "19"                # Chromosome number (e.g., "19", "01")
-
-# Analysis parameters
-min_q_threshold <- 0.2         # FDR threshold for variant inclusion
-
-# Input paths - modify for your environment
-protein_residuals_dir <- "path_to_protein_residuals"        # Step 2 output directory
-best_methods_file <- "path_to_best_methods_file"            # Step 5b output file
-fdr_summary_dir <- "path_to_step3_fdr_summaries"           # Step 3 output directory
-plink_path <- "path_to_training_genotype_data"             # Training genotype data directory
-
-# Output directory
-output_dir <- "path_to_step6_final_weights"                # Output directory for final weights
-
-# ============================================================================
-# SCRIPT EXECUTION
-# ============================================================================
-
-## Load Packages & Scripts
+# Load packages
 suppressMessages({
     library(tidyverse)
     library(plink2R)
     library(pecotmr)
     library(data.table)
     library(future)
+    source("./utilities/pqtl_weights.R")
+    source("./utilities/pqtl_functions.R")
+    source("./utilities/timing_function.R")
+})
+
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+
+# ANALYSIS PARAMETERS
+protein_name <- "a1bg"         # Protein name (e.g., "a1bg")
+chr_num <- "19"                # Chromosome number (e.g., "19", "01")
+min_q_threshold <- 0.2         # FDR threshold for variant inclusion
+
+# INPUT 1: Protein residuals from Step 2
+# - Files: {protein_name}_residual_npx.csv
+# - Covariate-adjusted NPX residuals for genetic analysis
+protein_residuals_dir <- "path_to_protein_residuals"
+
+# INPUT 2: Best methods from Step 5b
+# - File: best_method_by_cv_for_protein.csv
+# - Contains optimal method for each protein based on CV performance
+# - Format: [protein, best_method, best_avg_r2, avg_cv_corr, best_r2_sd]
+best_methods_file <- "path_to_best_methods_file"
+
+# INPUT 3: FDR summaries from Step 3
+# - LD block and variant selection based on FDR threshold
+fdr_summary_dir <- "path_to_step3_fdr_summaries"
+
+# INPUT 4: Genotype data
+# - PLINK format files (.bed/.bim/.fam) by chromosome
+# - Same genotype data used in previous steps
+# - Chromosome-specific analysis for computational efficiency
+plink_path <- "path_to_training_genotype_data"
+
+# OUTPUT 1: Final model weights
+# - Files: {protein}_{chr}_final_weights.csv
+# - Contains trained weights from best method on whole sample
+# - Format: [variant_id, weight_value]
+# - Used for protein prediction in Steps 7-8
+# OUTPUT 2: Model performance
+# - Files: {protein}_{chr}_whole_sample_performance.csv
+# - Performance metrics on whole sample training
+# - Format: [method, r2, correlation, rmse, mae]
+output_dir <- "path_to_step6_final_weights"
+
+# END CONFIGURATION
+# ============================================================================
+
+# Clear environment and record start time
+rm(list = ls()[!ls() %in% c("protein_name", "chr_num", "min_q_threshold", "protein_residuals_dir", "best_methods_file", "fdr_summary_dir", "plink_path", "output_dir")])
+time_1 <- Sys.time()
     library(furrr)
     source("../utilities/pqtl_weights.R")
     source("../utilities/pqtl_functions.R")

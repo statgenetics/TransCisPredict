@@ -1,76 +1,63 @@
 # ============================================================================
 # Step 3: LD Block Selection Based on FDR Thresholds
 # ============================================================================
-# 
-# Purpose:
-# This script performs marginal genetic association analysis across all LD blocks
-# to identify regions with significant genetic signal. It tests each variant within 
-# LD blocks and classifies blocks based on FDR-corrected significance thresholds 
-# (q < 0.1 and q < 0.2). This filtering step focuses downstream analysis on 
-# informative genomic regions.
+# Performs marginal genetic association analysis across all LD blocks to identify 
+# regions with significant genetic signal. Tests each variant within LD blocks and 
+# classifies blocks based on FDR-corrected significance thresholds. This filtering 
+# step focuses downstream analysis on informative genomic regions.
 #
-# Input:
-# 1. Protein residuals from Step 2:
-#    - Files: {protein_name}_residual_npx.csv  
-#    - Format: [eid, npx_residuals]
-#    - Covariate-adjusted protein phenotypes
-#
-# 2. Covariate file (same as Step 2):
-#    - CSV file with: IID, age, sex, bmi, pc1-pc20
-#    - Used for marginal association testing
-#
-# 3. Genotype data by LD blocks:
-#    - PLINK format files (.bed/.bim/.fam) split by genomic regions
-#    - Directory structure: chromosome/LD_block files
-#    - Genotyped variants only (no imputation)
-#
-# Output:
-# Region summary file: {protein_name}_region_stats_summary.csv
-# Format: [chr, region_start, region_end, region_name, n_unfiltered_variants, 
-#          n_filtered_variants, min_pval, signal_FDR0.1, signal_FDR0.2]
-#
-# Processing:
-# - For each protein and each LD block:
-#   1. Load genotype data for the region
-#   2. Perform marginal association: npx ~ covariates + SNP
-#   3. Apply Benjamini-Hochberg FDR correction
-#   4. Classify region: signal (q < 0.1/0.2) or no signal
-# - Used in Steps 4-5 to focus analysis on informative regions
-#
-# Statistical Model (per SNP):
-# NPX_residuals ~ age + sex + age x sex BMI + PC1-20 + SNP + ε
-# ============================================================================
+# Statistical Model (per SNP): NPX_residuals ~ age + sex + age×sex + BMI + PC1-20 + SNP + ε
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(data.table)
     library(tidyverse)
     library(plink2R)
     library(broom)
-    library(R.utils)    # For stat_mode function
-    source("../utilities/pqtl_functions.R")  # Utility functions
-    source("../utilities/pqtl_weights.R")    # Method implementations  
-    source("../utilities/timing_function.R") # Timing utility
+    library(R.utils)
+    source("./utilities/pqtl_functions.R")
+    source("./utilities/pqtl_weights.R")
+    source("./utilities/timing_function.R")
 })
 
 # ============================================================================
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Protein to analyze
-protein_name <- "protein_name"  # Name of protein to analyze (e.g., "a1bg")
+# ANALYSIS PARAMETER: Protein to analyze
+# - Name of protein to analyze (e.g., "a1bg")
+protein_name <- "protein_name"
 
-# Input paths - modify for your environment
-protein_residuals_dir <- "path_to_save_protein_residuals"     # Output from Step 2
-covariate_file <- "path_to_your_covariate_file.csv"         # Same as Step 2
-genotype_base_path <- "path_to_genotype_data_by_LD_blocks"   # LD block genotype files
+# INPUT 1: Protein residuals from Step 2
+# - Files: {protein_name}_residual_npx.csv  
+# - Format: [eid, npx_residuals]
+# - Covariate-adjusted protein phenotypes
+protein_residuals_dir <- "path_to_save_protein_residuals"
 
-# Output directory
+# INPUT 2: Covariate file (same as Step 2)
+# - CSV file with: IID, age, sex, bmi, pc1-pc20
+# - Used for marginal association testing
+covariate_file <- "path_to_your_covariate_file.csv"
+
+# INPUT 3: Genotype data by LD blocks
+# - PLINK format files (.bed/.bim/.fam) split by genomic regions
+# - Directory structure: chromosome/LD_block files
+# - Genotyped variants only (no imputation)
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"
+
+# OUTPUT: Region summary file
+# - File: {protein_name}_region_stats_summary.csv
+# - Format: [chr, region_start, region_end, region_name, n_unfiltered_variants, 
+#           n_filtered_variants, min_pval, signal_FDR0.1, signal_FDR0.2]
+# - Used in Steps 4-5 to focus analysis on informative regions
 output_dir <- "path_to_save_LD_block_results"
 
-# FDR thresholds for region classification
+# ANALYSIS PARAMETERS: FDR thresholds for region classification
 fdr_threshold_strict <- 0.1   # Stricter threshold
 fdr_threshold_liberal <- 0.2  # More liberal threshold
+
+# END CONFIGURATION
+# ============================================================================
 
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
@@ -367,24 +354,3 @@ cat("Blocks with signal (FDR < 0.2):", regions_with_signal_02,
 cat("Output file:", output_file, "\n")
 cat("============================================================================\n")
 
-# ============================================================================
-# EXPECTED OUTPUT FORMAT
-# ============================================================================
-#
-# Output file: {protein_name}_region_stats_summary.csv
-# Columns:
-# - chr: Chromosome number
-# - region_start: Start position of LD block (bp)
-# - region_end: End position of LD block (bp)  
-# - region_name: Identifier for LD block
-# - n_unfiltered_variants: Total variants before QC
-# - n_filtered_variants: Variants after QC (non-zero variance)
-# - min_pval: Minimum p-value across all variants in region
-# - signal_FDR0.1: 1 if region has signal at FDR < 0.1, 0 otherwise
-# - signal_FDR0.2: 1 if region has signal at FDR < 0.2, 0 otherwise
-#
-# Usage in downstream analysis:
-# - Steps 4-5: Filter analysis to regions with signal_FDR0.2 = 1
-# - Sensitivity analysis: Use signal_FDR0.1 = 1 for stricter filtering
-# - Reduces computational burden by focusing on informative regions
-# ============================================================================

@@ -1,49 +1,14 @@
 # ============================================================================
 # Step 8: Proteome-Wide Association Study (PWAS) Analysis
 # ============================================================================
-# 
-# Purpose:
-# This script performs proteome-wide association studies (PWAS) to test associations
-# between predicted protein levels from Step 7 and complex traits/diseases. It uses
-# generalized estimating equations (GEE) to account for population structure and
-# relatedness in the UK Biobank cohort.
+# Performs proteome-wide association studies (PWAS) to test associations between 
+# predicted protein levels from Step 7 and complex traits/diseases. Uses generalized 
+# estimating equations (GEE) to account for population structure and relatedness 
+# in the UK Biobank cohort.
 #
-# Input:
-# 1. Combined proteome predictions from Step 7b:
-#    - File: combined_predicted_proteome_all_white_british.csv
-#    - Contains predicted NPX values for all proteins across all individuals
-#    - Format: [IID, protein1, protein2, ..., proteinN]
-#
-# 2. Phenotype data:
-#    - CSV file with participant phenotypes/traits of interest
-#    - Required columns: participant ID, phenotype values, covariates
-#    - Format: [IID, phenotype, age, sex, bmi, other_covariates]
-#
-# 3. Population structure files:
-#    - Kinship matrix: for accounting for relatedness
-#    - Principal components: for population stratification control
-#    - Format: standard PLINK/genetic analysis formats
-#
-# Output:
-# 1. PWAS results: {trait}_pwas_results.csv
-#    - Association test results for all proteins with the specified trait
-#    - Format: [protein, estimate, std.error, p.value, rho]
-#    - estimate: effect size (beta coefficient)
-#    - std.error: standard error of the estimate
-#    - p.value: statistical significance
-#    - rho: correlation parameter from GEE model
-#
-# Usage Examples:
-# For continuous trait: Set pheno_col <- "adj_hdl", analysis_family <- "gaussian"
-# For binary trait: Set pheno_col <- "disease_status", analysis_family <- "binomial"
-#
-# Prerequisites:
-# - Must run AFTER Step 7b (combine_npx_files.R)
-# - Combined proteome prediction file must exist
-# - Phenotype and population structure files must be properly formatted
-# ============================================================================
+# Prerequisites: Must run AFTER Step 7a
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(tidyverse)
     library(data.table)
@@ -56,18 +21,41 @@ suppressMessages({
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Phenotype and analysis parameters
-pheno_file <- "path_to_phenotype_data.csv"     # Phenotype data file
+# ANALYSIS PARAMETERS
 pheno_col <- "adj_hdl"                         # Phenotype column name (e.g., "adj_hdl", "disease_status")
 analysis_family <- "gaussian"                  # Statistical family: "gaussian" (continuous) or "binomial" (binary)
 
-# Input files - modify for your environment
-proteome_predictions_file <- "path_to_combined_proteome_predictions.csv"  # Step 7b output
-kin_file <- "path_to_kinship_matrix.kin0"      # Kinship matrix file for relatedness correction
-pc_file <- "path_to_principal_components.txt"  # Principal components file for population stratification
+# INPUT 1: Combined proteome predictions from Step 7a
+# - File: combined_predicted_proteome_all_white_british.csv
+# - Contains predicted NPX values for all proteins across all individuals
+# - Format: [IID, protein1, protein2, ..., proteinN]
+proteome_predictions_file <- "path_to_combined_proteome_predictions.csv"
 
-# Output file
-output_file <- "path_to_pwas_results.csv"      # Output file for PWAS results
+# INPUT 2: Phenotype data
+# - CSV file with participant phenotypes/traits of interest
+# - Required columns: participant ID, phenotype values, covariates
+# - Format: [IID, phenotype, age, sex, bmi, other_covariates]
+pheno_file <- "path_to_phenotype_data.csv"
+
+# INPUT 3: Population structure files
+# - Kinship matrix for accounting for relatedness
+# - Principal components for population stratification control
+# - Format: standard PLINK/genetic analysis formats
+kin_file <- "path_to_kinship_matrix.kin0"
+pc_file <- "path_to_principal_components.txt"
+
+# OUTPUT: PWAS results
+# - File: {trait}_pwas_results.csv
+# - Association test results for all proteins with the specified trait
+# - Format: [protein, estimate, std.error, p.value, rho]
+# - estimate: effect size (beta coefficient)
+# - std.error: standard error of the estimate
+# - p.value: statistical significance
+# - rho: correlation parameter from GEE model
+output_file <- "path_to_pwas_results.csv"
+
+# END CONFIGURATION
+# ============================================================================
 
 # ============================================================================
 # SCRIPT EXECUTION
@@ -165,6 +153,5 @@ df_analysis <- df_analysis |>
 # Output results
 df_analysis |>
     janitor::clean_names() |>
-    mutate(q_value = p.adjust(p_value, method = "BH")) |>
-    arrange(q_value) |>
+    arrange(p_value) |>
     saveRDS(paste0(output_file, ".rds"))

@@ -1,84 +1,66 @@
 # ============================================================================
 # Step 4: Cross-Validation Analysis for Protein Prediction Methods
 # ============================================================================
-# 
-# Purpose:
-# This script performs 5-fold cross-validation to evaluate different statistical 
-# methods for predicting protein levels from genetic data. For each protein and
-# genomic region, it trains multiple methods (BayesR, LASSO, Elastic Net, SuSiE) 
-# and generates prediction weights for performance comparison in Step 5.
+# Performs 5-fold cross-validation to evaluate different statistical methods for 
+# predicting protein levels from genetic data. For each protein and genomic region, 
+# trains multiple methods (BayesR, LASSO, Elastic Net, SuSiE) and generates 
+# prediction weights for performance comparison in Step 5.
 #
-# Input:
-# 1. Protein residuals from Step 2:
-#    - Files: {protein_name}_residual_npx.csv
-#    - Format: [eid, npx_residuals]
-#    - Covariate-adjusted protein phenotypes
-#
-# 2. FDR region summaries from Step 3:
-#    - Files: {protein_name}_region_stats_summary.csv
-#    - Used to filter regions with genetic signal (signal_FDR0.2 = 1)
-#
-# 3. Genotype data by LD blocks:
-#    - PLINK format files (.bed/.bim/.fam)
-#    - Directory structure: chromosome/LD_block files
-#    - Same data as used in Step 3
-#
-# Output:
-# CV prediction weights: {protein}_{region}_posterior_weights.csv
-# - Columns: variant_id, {method1}_1, {method1}_2, ..., {method4}_5
-# - 4 methods × 5 CV folds = 20 weight columns per variant
-# - One file per genomic region with significant signal
-# - Used in Step 5 for performance evaluation
-#
-# Methods Evaluated:
-# - BayesR: Bayesian variable selection regression
-# - LASSO: L1-regularized regression
-# - Elastic Net: Combined L1/L2 regularization  
-# - SuSiE: Sum of Single Effects fine-mapping
-# (Linear regression used for single-variant regions)
-#
-# Processing:
-# - 5-fold cross-validation with consistent random seeds
-# - Only analyze regions with significant genetic signal from Step 3
-# - Train each method on 4/5 of data, generate weights for prediction
-# - Save weights for all methods and CV folds
-# ============================================================================
+# Methods Evaluated: BayesR, LASSO, Elastic Net, SuSiE (Linear regression for single-variant regions)
 
-# Load required packages and functions
+# Load packages
 suppressMessages({
     library(tidyverse)
-    library(rsample)      # For cross-validation splitting
-    library(plink2R)      # For genotype data loading
-    library(pecotmr)      # For statistical methods (BayesR, SuSiE, etc.)
-    library(data.table)   # For efficient data handling
-    library(future)       # For parallel processing
-    library(furrr)        # For parallel map functions
-    library(janitor)      # For column name cleaning
-    source("../utilities/pqtl_weights.R")    # Statistical methods implementation
-    source("../utilities/pqtl_functions.R")  # Utility functions
-    source("../utilities/timing_function.R") # Timing utilities
+    library(rsample)
+    library(plink2R)
+    library(pecotmr)
+    library(data.table)
+    library(future)
+    library(furrr)
+    library(janitor)
+    source("./utilities/pqtl_weights.R")
+    source("./utilities/pqtl_functions.R")
+    source("./utilities/timing_function.R")
 })
 
 # ============================================================================
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT  
 # ============================================================================
 
-# Protein and chromosome to analyze
+# ANALYSIS PARAMETERS
 protein_name <- "a1bg"           # Protein to analyze (e.g., "a1bg")
 chr_num <- "01"                  # Chromosome (e.g., "01", "02", "03")
-
-# Analysis parameters
 num_folds <- 5                   # Number of CV folds
 cv_seed <- 1                     # Random seed for reproducibility
 min_q_threshold <- 0.2           # FDR threshold for region selection
 
-# Input paths - modify for your environment
-protein_residuals_dir <- "path_to_save_protein_residuals"     # Step 2 output
-fdr_summaries_dir <- "path_to_fdr_region_summaries"          # Step 3 output  
-genotype_base_path <- "path_to_genotype_data_by_LD_blocks"   # Same as Step 3
+# INPUT 1: Protein residuals from Step 2
+# - Files: {protein_name}_residual_npx.csv
+# - Format: [eid, npx_residuals]
+# - Covariate-adjusted protein phenotypes
+protein_residuals_dir <- "path_to_save_protein_residuals"
 
-# Output directory
+# INPUT 2: FDR region summaries from Step 3
+# - Files: {protein_name}_region_stats_summary.csv
+# - Used to filter regions with genetic signal (signal_FDR0.2 = 1)
+fdr_summaries_dir <- "path_to_fdr_region_summaries"
+
+# INPUT 3: Genotype data by LD blocks
+# - PLINK format files (.bed/.bim/.fam)
+# - Directory structure: chromosome/LD_block files
+# - Same data as used in Step 3
+genotype_base_path <- "path_to_genotype_data_by_LD_blocks"
+
+# OUTPUT: CV prediction weights
+# - Files: {protein}_{region}_posterior_weights.csv
+# - Columns: variant_id, {method1}_1, {method1}_2, ..., {method4}_5
+# - 4 methods × 5 CV folds = 20 weight columns per variant
+# - One file per genomic region with significant signal
+# - Used in Step 5 for performance evaluation
 output_dir <- "path_to_save_cv_weights"
+
+# END CONFIGURATION
+# ============================================================================
 
 # ============================================================================
 # SCRIPT EXECUTION
@@ -369,26 +351,3 @@ cat("Total runtime:", total_duration, "\n")
 cat("Output directory:", output_dir, "\n")
 cat("============================================================================\n")
 
-# ============================================================================
-# EXPECTED OUTPUT FORMAT
-# ============================================================================
-#
-# Output files: {protein}_{region}_posterior_weights.csv
-# 
-# Format:
-# variant_id, bayes_r_weights_1, bayes_r_weights_2, ..., bayes_r_weights_5,
-#             susie_weights_1, susie_weights_2, ..., susie_weights_5,
-#             lasso_weights_1, lasso_weights_2, ..., lasso_weights_5,
-#             enet_weights_1, enet_weights_2, ..., enet_weights_5
-#
-# - Each row represents a genetic variant
-# - Each method has 5 columns (one per CV fold)
-# - Total: 20 columns (4 methods × 5 folds) + variant_id
-# - NA values indicate method did not select that variant
-# - Non-NA values are prediction weights
-#
-# Usage in Step 5:
-# - These weights are applied to test set genotypes
-# - Performance metrics calculated for each method
-# - Best performing method identified per protein
-# ============================================================================

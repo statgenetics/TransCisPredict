@@ -1,58 +1,39 @@
 # ============================================================================
 # Step 1: Process OLINK Proteomics Data
 # ============================================================================
-# 
-# Purpose:
-# This script processes raw OLINK proteomics data from UK Biobank Pharma 
-# Proteomics Project (UKB-PPP). It takes the raw batch files containing all 
-# proteins and splits them into individual protein files for downstream analysis.
-#
-# Input:
-# - Raw OLINK batch files containing all proteins from UKB-PPP
-# - Each batch file contains: participant IDs (eid) + protein expression values (NPX)
-# - Multiple batch files numbered sequentially (e.g., 0001.csv, 0002.csv, etc.)
-# - Input file format: CSV with columns [eid, protein1, protein2, ..., proteinN]
-#
-# Output:
-# - Individual protein files, one per protein
-# - Each file contains: [eid, protein_expression_value] 
-# - Files named: {protein_name}_npx_instance_0_ukb_ppp.csv
-# - Missing values removed, participant IDs sorted
-#
-# Processing:
-# - Loops through all batch files
-# - Extracts each protein column individually
-# - Removes missing values (drop_na)
-# - Sorts by participant ID for consistency
-# - Saves as individual CSV files for downstream analysis
-#
-# Usage:
-# Set input_path to directory containing numbered batch files
-# Set output_dir to directory where individual protein files will be saved
-# Set input_file_template to match your file naming pattern (use {num} as placeholder)
-# ============================================================================
+# Processes raw OLINK proteomics data from UK Biobank Pharma Proteomics Project.
+# Takes raw batch files containing all proteins and splits them into individual 
+# protein files for downstream analysis.
 
-# Load packages and functions
+# Load packages
 suppressMessages({
     library(tidyverse)
     library(data.table)
-    source("../utilities/timing_function.R")  # Timing utility function
+    source("./utilities/timing_function.R")
 })
 
 # ============================================================================
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Input directory containing raw OLINK batch files
-# Files should be named with sequential numbers: 0001.csv, 0002.csv, etc.
+# INPUT: Raw OLINK batch files containing all proteins from UKB-PPP
+# - Each batch file contains: participant IDs (eid) + protein expression values (NPX)
+# - Multiple batch files numbered sequentially (e.g., 0001.csv, 0002.csv, etc.)
+# - Input file format: CSV with columns [eid, protein1, protein2, ..., proteinN]
 input_path <- "path_where_you_store_NPX_data_all_proteins"
 
-# Output directory for individual protein files
+# Input file naming pattern - use {num} as placeholder for sequential number
+# Will be formatted as 4-digit: 0001, 0002, etc.
+input_file_template <- "appXXXXX_your_application_ID_olink_instance_0_{num}.csv"
+
+# OUTPUT: Individual protein files, one per protein
+# - Each file contains: [eid, protein_expression_value] 
+# - Files named: {protein_name}_npx_instance_0_ukb_ppp.csv
+# - Missing values removed, participant IDs sorted
 output_dir <- "path_where_you_save_each_protein_file"
 
-# Input file naming pattern - modify this template to match your file naming convention
-# Use {num} as placeholder for the sequential number (will be formatted as 4-digit: 0001, 0002, etc.)
-input_file_template <- "appXXXXX_your_application_ID_olink_instance_0_{num}.csv"
+# END CONFIGURATION
+# ============================================================================
 
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
@@ -138,21 +119,3 @@ cat("Total processing time:", processing_time, "\n")
 cat("Output files saved to:", output_dir, "\n")
 cat("============================================================================\n")
 
-# ============================================================================
-# EXPECTED OUTPUT
-# ============================================================================
-#
-# Individual protein files with format:
-# - Filename: {protein_name}_npx_instance_0_ukb_ppp.csv
-# - Columns: eid, {protein_name}
-# - Example content:
-#   eid,PROTEIN1
-#   1000001,5.2345
-#   1000002,4.8901
-#   1000003,6.1234
-#
-# Quality control notes:
-# - Missing values removed for each protein
-# - Participant IDs sorted consistently
-# - Ready for Step 2 covariate regression analysis
-# ============================================================================

@@ -1,40 +1,14 @@
 # ============================================================================
-# Step 7b: Combine Population Protein Predictions 
+# Step 7a: Combine Population Protein Predictions 
 # ============================================================================
-# 
-# Purpose:
-# This script combines individual protein prediction files from Step 7a into a
-# single comprehensive dataset containing predicted protein levels for all proteins
-# across the entire UK Biobank White British cohort. This creates the final
+# Combines individual protein prediction files from Step 7b into a single 
+# comprehensive dataset containing predicted protein levels for all proteins 
+# across the entire UK Biobank White British cohort. Creates the final 
 # proteome-wide prediction matrix for PWAS analysis.
 #
-# Input:
-# 1. Individual protein prediction files from Step 7a:
-#    - Files: {protein}_predicted_npx_all_white_british.csv
-#    - Each contains: [participant_id, predicted_npx] for one protein
-#    - Located in Step 7a output directory
-#
-# Output:
-# 1. Combined proteome predictions: combined_predicted_proteome_all_white_british.csv
-#    - Contains predicted NPX values for ALL proteins and ALL individuals
-#    - Format: [IID, protein1, protein2, protein3, ..., proteinN]
-#    - One row per individual, one column per protein
-#    - Used as input for Step 8 PWAS analysis
-#
-# Usage Example:
-# Rscript combine_npx_files.R path_to_step7a_predictions path_to_combined_output.csv
-#
-# Command line arguments:
-# Argument 1: input_dir - Directory containing individual protein prediction files from Step 7a
-# Argument 2: output_file - Full path to combined output file (including filename)
-#
-# Prerequisites:
-# - Must run AFTER Step 7a (predict_npx_all_ukbb_white_british.R)
-# - All protein prediction files must have consistent participant ID formatting
-# - Files should contain the same number of individuals for proper merging
-# ============================================================================
+# Prerequisites: Must run AFTER Step 7b
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(tidyverse)
     library(data.table)
@@ -44,10 +18,17 @@ suppressMessages({
 # CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
 # ============================================================================
 
-# Input directory containing individual protein prediction files from Step 7a
-input_dir <- "path_to_step7a_individual_predictions"    # Directory with individual protein predictions from Step 7a
+# INPUT: Individual protein prediction files from Step 7b
+# - Files: {protein}_predicted_npx_all_white_british.csv
+# - Each contains: [participant_id, predicted_npx] for one protein
+input_dir <- "path_to_step7b_individual_predictions"
 
-# Output file path
+# OUTPUT: Combined proteome predictions
+# - File: combined_predicted_proteome_all_white_british.csv
+# - Contains predicted NPX values for ALL proteins and ALL individuals
+# - Format: [IID, protein1, protein2, protein3, ..., proteinN]
+# - One row per individual, one column per protein
+# - Used as input for Step 8 PWAS analysis
 output_file <- "path_to_combined_proteome_predictions.csv"   # Full path to combined output file
 
 # ============================================================================

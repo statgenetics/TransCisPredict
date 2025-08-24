@@ -1,47 +1,40 @@
 # ============================================================================
 # Step 5b: Identify Best Cross-Validation Method Per Protein
 # ============================================================================
-# 
-# Purpose:
-# This script identifies the best-performing statistical method for each protein
-# based on cross-validation results from Step 5a. It compares performance across
-# all methods (BayesR, LASSO, Elastic Net, SuSiE) and selects the method with
-# highest average R² across CV folds.
+# Identifies the best-performing statistical method for each protein based on 
+# cross-validation results from Step 5a. Compares performance across all methods 
+# and selects the method with highest average R² across CV folds.
 #
-# Input:
-# 1. CV prediction accuracy files from Step 5a:
-#    - Files: {protein}_cv_prediction_accuracy.csv
-#    - Contains performance metrics for all methods across CV folds
-#    - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
-#    - Located in prediction_accuracy/ subdirectory from Step 5a output
-#
-# Output:
-# 1. Best methods summary: best_method_by_cv_for_protein.csv
-#    - Contains best method identification for each protein
-#    - Format: [protein, best_method, best_avg_r2, avg_cv_corr, best_r2_sd]
-#    - best_method: Method name with highest average R² (e.g., "bayesr_weights")
-#    - best_avg_r2: Average R² across CV folds for best method
-#    - avg_cv_corr: Average correlation across CV folds for best method  
-#    - best_r2_sd: Standard deviation of R² across CV folds for best method
-#
-# Usage Example:
-# Set input_dir and output_dir in configuration section below
-#
-# Prerequisites:
-# - Must run AFTER Step 5a (evaluate_cv_performance.R)
-# - Input files must contain R² columns for method comparison
-# ============================================================================
+# Prerequisites: Must run AFTER Step 5a
 
-# Load required packages
+# Load packages
 suppressMessages({
     library(tidyverse)
 })
 
-## CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
+# CONFIGURATION - MODIFY THESE PATHS FOR YOUR ENVIRONMENT
+# ============================================================================
 
-# Input and output directories
-input_dir <- "path_to_step5a_prediction_accuracy_files/"    # Directory with prediction accuracy files from Step 5a
-output_dir <- "path_to_step5b_output/"                      # Directory to write best methods summary
+# INPUT: CV prediction accuracy files from Step 5a
+# - Files: {protein}_cv_prediction_accuracy.csv
+# - Contains performance metrics for all methods across CV folds
+# - Format: [cv_num, method1_corr, method1_r2, ..., method2_corr, method2_r2, ...]
+# - Located in prediction_accuracy/ subdirectory from Step 5a output
+input_dir <- "path_to_step5a_prediction_accuracy_files/"
+
+# OUTPUT: Best methods summary
+# - File: best_method_by_cv_for_protein.csv
+# - Contains best method identification for each protein
+# - Format: [protein, best_method, best_avg_r2, avg_cv_corr, best_r2_sd]
+# - best_method: Method name with highest average R² (e.g., "bayesr_weights")
+# - best_avg_r2: Average R² across CV folds for best method
+# - avg_cv_corr: Average correlation across CV folds for best method  
+# - best_r2_sd: Standard deviation of R² across CV folds for best method
+output_dir <- "path_to_step5b_output/"
+
+# END CONFIGURATION
+# ============================================================================
 
 # ============================================================================
 # SCRIPT EXECUTION
