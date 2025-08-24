@@ -30,7 +30,8 @@ pqtl_qc <- function(sumstats, LD, ...){
 
     alt_id <- variant_id |>
         as_tibble() |>
-        separate(value, into = c("chrom", "pos", "A2", "A1"), sep = ":")|>
+        separate(value, into = c("chrom", "pos", "A2", "A1"), sep = ":", 
+                convert = FALSE, remove = FALSE) |>
         mutate(alt_id = paste(chrom, pos, A1, A2, sep = ":")) |>
         pull(alt_id)
 
@@ -45,12 +46,19 @@ pqtl_qc <- function(sumstats, LD, ...){
         rss_basic_qc(LD_data)
     sumstats <- preprocess_results$sumstats
   
-    # remove outliers 
-    qc_results <- summary_stats_qc(sumstats, LD_data, n = median(sumstats$n), 
-                                   method = "rss_qc")
+    # remove outliers with error handling
+    qc_results <- tryCatch({
+        summary_stats_qc(sumstats, LD_data, n = median(sumstats$n), 
+                         method = "rss_qc")
+    }, error = function(e) {
+        warning("QC failed: ", e$message, ". Returning preprocessed results.")
+        list(sumstats = sumstats, LD = LD_data$combined_LD_matrix)
+    })
     
     return(qc_results)
 }
+
+
 #' Match Summary Statistics to LD matrix
 #'
 #' This function takes summary statistics for an entire chromosome and returns only the rows 
@@ -81,6 +89,8 @@ match_ld <- function(sumstats, LD){
     
     return(sumstats_filtered)
 }
+
+
 #' Format RSS 
 #'
 #' This function modifies summary statistics from Sun et al., selecting only necessary columns and naming 
@@ -107,6 +117,8 @@ rss_format <- function(df) {
                
     return(df)
 }
+
+
 #' Untar and Extract Summary Statistics
 #'
 #' Given a path to a tarball containing summary statistics in separate .gz files, this function 
@@ -156,6 +168,7 @@ stat_mode <- function(x) {
     unique_vals[which.max(tabulate(match(x, unique_vals)))]
 }
 
+
 #' Utility function for imputing NA values in a matrix
 #'
 #' @export
@@ -175,6 +188,7 @@ clean_matrix_na <- function(mat) {
   return(mat_clean)
 }
 
+
 #' Wrapper to obtain SuSiE weights
 #'
 #' This function imputes NA values into a genotype matrix based upon column modes, and then executes 
@@ -188,24 +202,31 @@ clean_matrix_na <- function(mat) {
 #' @export
 susie_weights_wrapper <- function(y, X, ...) {
 
-    # Impute column mode to NA values
-    # X_clean <- clean_matrix_na(X)
-    print(sum(is.na(X)))
-    # Call susie_weights function with the cleaned X
-    weights <- X |>
-        clean_matrix_na() |>
-        susie_weights(y = y, X = _, ...)
+    # Call susie_weights function with the cleaned X and error handling
+    weights <- tryCatch({
+        X |>
+            clean_matrix_na() |>
+            susie_weights(y = y, X = _, ...)
+    }, error = function(e) {
+        warning("SuSiE weights failed: ", e$message)
+        # Return zero weights as fallback
+        rep(0, ncol(X))
+    })
     
     return(weights)
 }
 
-                               
+
 #' Return weights from linear regression  
 #' @export                               
 lm_weights <- function(y, X){
-    # Fit a simple linear regression
-    fit = lm(y ~ X)
-    
-    # Return the coefficient for the variable
-    return(fit$coefficients[2])
+    # Fit a simple linear regression with error handling
+    tryCatch({
+        fit = lm(y ~ X)
+        coef_val <- fit$coefficients[2]
+        return(ifelse(is.na(coef_val), 0, coef_val))
+    }, error = function(e) {
+        warning("Linear regression failed: ", e$message)
+        return(0)
+    })
 }

@@ -61,6 +61,7 @@ pqtl_weights <- function(y = NULL, X = NULL, sumstats = NULL, LD = NULL,
     return(results)
 }
 
+
 #' Compute pQTL weights on individual data - WIP
 #'
 #' This function provides pQTL weights for SNPs given individual data and a set of methods
@@ -146,7 +147,12 @@ compute_pqtl_weights <- function(y, X, weight_methods, num_cores, seed = NULL) {
 compute_pqtl_rss_weights <- function(sumstats, LD, weight_methods, num_cores, seed = NULL) {
     # define function
     compute_method_weights <- function(method_name) {
-        library(pecotmr) ## load pecotmr within each R session
+        # Load pecotmr library with error handling
+        tryCatch({
+            library(pecotmr, quietly = TRUE)
+        }, error = function(e) {
+            stop("Failed to load pecotmr package: ", e$message)
+        })
         args <- weight_methods[[method_name]]
 
         # Initialize Y with zeros to avoid NA

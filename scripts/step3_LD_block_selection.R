@@ -26,7 +26,7 @@ suppressMessages({
 
 # ANALYSIS PARAMETER: Protein to analyze
 # - Name of protein to analyze (e.g., "a1bg")
-protein_name <- "protein_name"
+protein_name <- "a1bg"  # MODIFY: Set to your protein of interest
 
 # INPUT 1: Protein residuals from Step 2
 # - Files: {protein_name}_residual_npx.csv  

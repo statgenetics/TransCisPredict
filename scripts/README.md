@@ -71,8 +71,8 @@ Trains final prediction models using the complete dataset and optimal method ide
 
 ### Step 7: Population Prediction
 **Scripts**:
-- [step7a_combine_npx_files.R](https://github.com/statgenetics/TransCisPredict/blob/main/scripts/step7a_combine_npx_files.R) - Combines individual protein predictions into final matrix
-- [step7b_predict_npx_population.R](https://github.com/statgenetics/TransCisPredict/blob/main/scripts/step7b_predict_npx_population.R) - Predicts protein levels for target population
+- [step7a_predict_npx_population.R](https://github.com/statgenetics/TransCisPredict/blob/main/scripts/step7a_predict_npx_population.R) - Predicts protein levels for target population
+- [step7b_combine_npx_files.R](https://github.com/statgenetics/TransCisPredict/blob/main/scripts/step7b_combine_npx_files.R) - Combines individual protein predictions into final matrix
 
 Applies trained models to predict protein levels for UK Biobank individuals without measured proteomic data.
 

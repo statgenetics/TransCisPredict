@@ -64,14 +64,13 @@ output_dir <- "path_to_step6_final_weights"
 # END CONFIGURATION
 # ============================================================================
 
-# Clear environment and record start time
-rm(list = ls()[!ls() %in% c("protein_name", "chr_num", "min_q_threshold", "protein_residuals_dir", "best_methods_file", "fdr_summary_dir", "plink_path", "output_dir")])
+# Create output directory if it doesn't exist
+if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+}
+
+# Record start time
 time_1 <- Sys.time()
-    library(furrr)
-    source("../utilities/pqtl_weights.R")
-    source("../utilities/pqtl_functions.R")
-    source("../utilities/timing_function.R")
-})
 
 # Load protein residuals
 cat("Loading protein residuals for", protein_name, "...\n")

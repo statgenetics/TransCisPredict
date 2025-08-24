@@ -49,9 +49,9 @@ for(file_name in prediction_list) {
     # Get protein name
     protein_name <- str_extract(file_name, "^[:graph:]+(?=_cv_)")
     
-    data = read_csv(paste0(input_dir, file_name), show_col_types=FALSE)
     # Load predictions
-    df_pred <- read_csv(paste0(input_dir, file_name), show_col_types=FALSE) |>
+    data <- read_csv(paste0(input_dir, file_name), show_col_types=FALSE)
+    df_pred <- data |>
         select(-ends_with("adj_r2")) |>
         select(ends_with("r2"))
     

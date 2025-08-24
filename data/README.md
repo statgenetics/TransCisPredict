@@ -1,8 +1,14 @@
-# Data Directory
+# Data Access Information
 
-This directory contains all data files required for the TransCisPredict analysis pipeline and for applying the trained protein prediction models that incorporate both cis and trans genetic effects.
+Due to the large size of the datasets (>20GB), all data files required for the TransCisPredict analysis pipeline and for applying the trained protein prediction models are hosted on Synapse. This directory contains information for accessing these datasets.
 
-## Contents
+## Data Access via Synapse
+
+**Synapse Project**: [PLACEHOLDER_SYNAPSE_LINK]  
+**Access Requirements**: [Details to be added]  
+**Download Instructions**: See sections below
+
+## Dataset Contents
 
 ### Variant Annotation Files
 **Directory**: `bim_files_per_LD_block/`
@@ -45,13 +51,19 @@ bim_files_per_LD_block/
 - Contains final trained protein prediction weights from Step 6 (Whole Sample Analysis)
 - Incorporates both cis and trans effects across the genome
 - Optimal statistical method selected per protein (BayesR, SuSiE, LASSO, or Elastic Net)
-- Weight files for 2,339 proteins that meet performance thresholds
+- Weight files for proteins that meet performance thresholds
 - Each weight file contains variant IDs and their corresponding effect sizes for protein prediction
 
-## Usage
+## Download and Usage Instructions
 
+### Step 1: Data Access
+1. Register for Synapse account at [https://www.synapse.org/](https://www.synapse.org/)
+2. Request access to the TransCisPredict project: [PLACEHOLDER_SYNAPSE_LINK]
+3. Follow data use agreement requirements
+4. Download required datasets to your local analysis environment
+
+### Step 2: Data Usage
 1. **Locate variants**: Use the .bim files to map between rsIDs and genomic positions for variant matching with your genotype data
-
 2. **Apply weights**: Use prediction weights in conjunction with variant annotations for protein expression prediction
 
 ## Technical Details
