@@ -55,7 +55,7 @@ This framework enables:
 ## Data Availability
 
 Due to the large size of the datasets, all data files are hosted on Synapse. See `data/README.md` for detailed instructions on accessing:
-- Variant annotation files (.bim format) with genomic positions, rsIDs, and allele information
+- Variant annotation files (`.bim` format) with genomic positions, rsIDs, and allele information
 - Final trained protein prediction weights for external genotype data application
 
 ## Citation

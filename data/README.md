@@ -12,44 +12,45 @@ Due to the large size of the datasets, all data files required for the TransCisP
 **Structure**:
 ```
 TransCisPredict/
-├── bim/
-│   ├── all_chromosomes.bim      # Complete variant set across all autosomes (chromosomes 1-22)
-│   ├── chr01.bim                # Chromosome 1
-│   ├── chr02.bim                # Chromosome 2
-│   ├── chr03.bim                # Chromosome 3
-│   ├── chr04.bim                # Chromosome 4
-│   ├── chr05.bim                # Chromosome 5
-│   ├── chr06.bim                # Chromosome 6
-│   ├── chr07.bim                # Chromosome 7
-│   ├── chr08.bim                # Chromosome 8
-│   ├── chr09.bim                # Chromosome 9
-│   ├── chr10.bim                # Chromosome 10
-│   ├── chr11.bim                # Chromosome 11
-│   ├── chr12.bim                # Chromosome 12
-│   ├── chr13.bim                # Chromosome 13
-│   ├── chr14.bim                # Chromosome 14
-│   ├── chr15.bim                # Chromosome 15
-│   ├── chr16.bim                # Chromosome 16
-│   ├── chr17.bim                # Chromosome 17
-│   ├── chr18.bim                # Chromosome 18
-│   ├── chr19.bim                # Chromosome 19
-│   ├── chr20.bim                # Chromosome 20
-│   ├── chr21.bim                # Chromosome 21
-│   └── chr22.bim                # Chromosome 22
-├── weights/
-│   ├── A1BG.csv
-│   ├── AAMDC.csv
-│   ├── AARSD1.csv
-│   └── ... (2,339 total files)
-└── README.md
+|-- bim/
+|   |-- `all_chromosomes.bim`      # Complete variant set across all autosomes (chromosomes 1-22)
+|   |-- `chr01.bim`                # Chromosome 1
+|   |-- `chr02.bim`                # Chromosome 2
+|   |-- `chr03.bim`                # Chromosome 3
+|   |-- `chr04.bim`                # Chromosome 4
+|   |-- `chr05.bim`                # Chromosome 5
+|   |-- `chr06.bim`                # Chromosome 6
+|   |-- `chr07.bim`                # Chromosome 7
+|   |-- `chr08.bim`                # Chromosome 8
+|   |-- `chr09.bim`                # Chromosome 9
+|   |-- `chr10.bim`                # Chromosome 10
+|   |-- `chr11.bim`                # Chromosome 11
+|   |-- `chr12.bim`                # Chromosome 12
+|   |-- `chr13.bim`                # Chromosome 13
+|   |-- `chr14.bim`                # Chromosome 14
+|   |-- `chr15.bim`                # Chromosome 15
+|   |-- `chr16.bim`                # Chromosome 16
+|   |-- `chr17.bim`                # Chromosome 17
+|   |-- `chr18.bim`                # Chromosome 18
+|   |-- `chr19.bim`                # Chromosome 19
+|   |-- `chr20.bim`                # Chromosome 20
+|   |-- `chr21.bim`                # Chromosome 21
+|   |-- `chr22.bim`                # Chromosome 22
+|-- weights/
+|   |-- `A1BG.csv`
+|   |-- `AAMDC.csv`
+|   |-- `AARSD1.csv`
+|   |-- ... (2,339 total files)
+|-- `weights.tar.gz`            # Compressed archive of all weight files
+|-- `README.md`
 ```
 
 ### Variant Annotation Files (`bim/`)
-- Contains PLINK-format variant information files (.bim) providing genomic variant information
+- Contains PLINK-format variant information files (`.bim`) providing genomic variant information
 - **Genome build**: GRCh37/hg19 coordinates
 - **Population**: UK Biobank White British ancestry participants
 
-**File format** (standard PLINK .bim format):
+**File format** (standard PLINK `.bim` format):
 ```
 CHR    SNP           CM    BP         A1    A2
 1      rs3131962     0     756604     A     G
@@ -72,11 +73,15 @@ CHR    SNP           CM    BP         A1    A2
 
 ### Protein Prediction Weights (`weights/`)
 - Contains posterior weights for protein expression prediction
-- **Total files**: 2,339 CSV files (one per protein)
+- **Total files**: 2,339 `.csv` files (one per protein)
 - **Naming convention**: `{PROTEIN}.csv`
 - **Example**: `A1BG.csv`
 
-**File Format**: CSV files with two columns:
+### Bulk Download (`weights.tar.gz`)
+- Compressed archive containing all 2,339 protein weight files
+- Download this single file if you need all protein prediction weights
+
+**File Format**: `.csv` files with two columns:
 - `variant_id`: SNP identifier (rsID format)
 - `{method}_weights`: Prediction weights estimated using one of four methods:
   - `bayes_r_weights` - BayesR method
@@ -102,8 +107,10 @@ CHR    SNP           CM    BP         A1    A2
 4. Download required datasets to your local analysis environment
 
 ### Step 2: Data Usage
-1. **Locate variants**: Use the .bim files to map between rsIDs and genomic positions for variant matching with your genotype data
+1. **Locate variants**: Use the `.bim` files to map between rsIDs and genomic positions for variant matching with your genotype data
 2. **Apply weights**: Use prediction weights in conjunction with variant annotations for protein expression prediction
+   - Download individual protein files from `weights/` folder for specific proteins
+   - Download `weights.tar.gz` for all proteins (extract with: `tar -xzf weights.tar.gz`)
 
 ## Statistical Methods
 
