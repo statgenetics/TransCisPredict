@@ -37,9 +37,9 @@ TransCisPredict/
 │   ├── chr21.bim                # Chromosome 21
 │   └── chr22.bim                # Chromosome 22
 ├── weights/
-│   ├── A1BG_posterior_weights.csv
-│   ├── AAMDC_posterior_weights.csv
-│   ├── AARSD1_posterior_weights.csv
+│   ├── A1BG.csv
+│   ├── AAMDC.csv
+│   ├── AARSD1.csv
 │   └── ... (2,339 total files)
 └── README.md
 ```
@@ -73,14 +73,14 @@ CHR    SNP           CM    BP         A1    A2
 ### Protein Prediction Weights (`weights/`)
 - Contains posterior weights for protein expression prediction
 - **Total files**: 2,339 CSV files (one per protein)
-- **Naming convention**: `{PROTEIN}_posterior_weights.csv`
-- **Example**: `A1BG_posterior_weights.csv`
+- **Naming convention**: `{PROTEIN}.csv`
+- **Example**: `A1BG.csv`
 
 **File Format**: CSV files with two columns:
 - `variant_id`: SNP identifier (rsID format)
 - `{method}_weights`: Prediction weights estimated using one of four methods:
   - `bayes_r_weights` - BayesR method
-  - `susie_weights` - SuSiE method  
+  - `susie_weights` - SuSiE method
   - `lasso_weights` - Lasso method
   - `enet_weights` - Elastic-net method
 
@@ -124,4 +124,3 @@ When using these data files, please:
 - Acknowledge the UK Biobank resource
 - Comply with UK Biobank data use agreements
 - Restrict use to academic research purposes
-
