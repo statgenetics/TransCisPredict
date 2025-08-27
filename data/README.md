@@ -11,40 +11,60 @@ Due to the large size of the datasets (>20GB), all data files required for the T
 ## Dataset Contents
 
 ### Variant Annotation Files
-**Directory**: `bim_files_per_LD_block/`
-- Contains PLINK-format variant information files (.bim) organized by chromosome and LD blocks
+**Directory**: `bim_files/`
+- Contains PLINK-format variant information files (.bim) with 646,634 variants total
 - **Genome build**: GRCh37/hg19 coordinates
+- **Population**: UK Biobank White British ancestry participants
 
 **Structure**:
 ```
-bim_files_per_LD_block/
-├── 01/
-│   ├── 01_10583_1892607_unrelated_EUR_42644_individuals.bim
-│   ├── 01_1892607_3582736_unrelated_EUR_42644_individuals.bim
-│   └── ...
-├── 02/
-│   ├── 02_10133_1781022_unrelated_EUR_42644_individuals.bim
-│   └── ...
-├── 03/
-└── ... (continues for all chromosomes)
+bim_files/
+├── all_chromosomes.bim          # Complete variant set
+├── chr01.bim                    # Chromosome 1
+├── chr02.bim                    # Chromosome 2
+├── chr03.bim                    # Chromosome 3
+├── chr04.bim                    # Chromosome 4
+├── chr05.bim                    # Chromosome 5
+├── chr06.bim                    # Chromosome 6
+├── chr07.bim                    # Chromosome 7
+├── chr08.bim                    # Chromosome 8
+├── chr09.bim                    # Chromosome 9
+├── chr10.bim                    # Chromosome 10
+├── chr11.bim                    # Chromosome 11
+├── chr12.bim                    # Chromosome 12
+├── chr13.bim                    # Chromosome 13
+├── chr14.bim                    # Chromosome 14
+├── chr15.bim                    # Chromosome 15
+├── chr16.bim                    # Chromosome 16
+├── chr17.bim                    # Chromosome 17
+├── chr18.bim                    # Chromosome 18
+├── chr19.bim                    # Chromosome 19
+├── chr20.bim                    # Chromosome 20
+├── chr21.bim                    # Chromosome 21
+├── chr22.bim                    # Chromosome 22
+└── README.md                    # Documentation for variant files
 ```
 
-**File format** (standard PLINK .bim):
+**File format** (standard PLINK .bim with header):
 ```
-1    rs3131962    0    756604     A    G
-1    rs115991721  0    767096     G    A
-1    rs12562034   0    768448     A    G
+CHR    SNP           CM    BP         A1    A2
+1      rs3131962     0     756604     A     G
+1      rs115991721   0     767096     G     A
+1      rs12562034    0     768448     A     G
 ```
 
 **Columns**:
 1. Chromosome number (1-22)
-2. Reference SNP ID (rs number)
+2. SNP identifier (rsID format)
 3. Genetic distance in centiMorgans (0)
 4. Physical position (GRCh37/hg19)
 5. Reference allele (A1)  
 6. Alternative allele (A2)
 
-**File naming**: Files contain "EUR" indicating European ancestry subset, which consists of White British participants in this analysis.
+**Organization**: 
+- Individual chromosome files (chr01.bim - chr22.bim) for memory-efficient analysis
+- Complete genome-wide file (all_chromosomes.bim) for comprehensive analysis
+- All variants sorted by genomic position within chromosomes
 
 ### Prediction Weights
 **Directory**: `weights/`
@@ -75,7 +95,7 @@ bim_files_per_LD_block/
 
 ## Weight File Format
 
-Weight files (`weights/{protein_name}_final_weights.csv`) contain:
+Weight files (`weights/{protein_name}_posterior_weights.csv`) contain:
 ```csv
 variant_id,weight
 chr1:12345:A:G,0.0234
@@ -83,9 +103,7 @@ chr1:67890:T:C,-0.0156
 ```
 
 - **variant_id**: Chromosome:position:reference_allele:alternative_allele format
-- **weight**: Effect size for the alternative allele in normalized protein expression units
-- **Method**: Generated using optimal statistical method selected via cross-validation
-- **Application**: Multiply genotype dosages by weights and sum to predict protein levels
+- **weight**: Effect size for the alternative allele in normalized protein expression units (in the column name you can tell which method it is generated from)
 
 ## Applications
 
