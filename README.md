@@ -32,9 +32,7 @@ d. **Predict Protein Levels**: Use the obtained weights to predict protein expre
 
 e. **Perform PWAS**: Conduct proteome-wide association studies using the predicted protein levels (see `step8_pwas_analysis/`)
 
-## Key Components
-
-### Scripts Directory
+## Scripts Directory
 Contains the complete analysis pipeline with comprehensive documentation and usage examples. Each step is self-contained with clear input/output specifications.
 
 ## Applications
@@ -42,7 +40,7 @@ Contains the complete analysis pipeline with comprehensive documentation and usa
 This framework enables:
 - **Weight Estimation**: Generate weight estimation between protein expression level and genetic vriants from the reference sample
 - **Protein Expression Prediction**: Predict heritable component of protein levels using only genotype data from the target sample
-- **PWAS in Non-Proteomic Cohorts**: Conduct PWAS
+- **PWAS in Target Cohort**: Conduct PWAS to identify associations with complex traits
 
 ## Citation
 
@@ -51,4 +49,4 @@ Please cite the associated manuscript when using these analysis scripts and pred
 
 ## License
 
-This repository is intended for academic research and manuscript reproducibility. Please respect data use agreements for UK Biobank data.
+This repository is intended for academic research and manuscript reproducibility. Please respect data usage agreements for UK Biobank data [FIXME].
