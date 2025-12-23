@@ -1,6 +1,6 @@
 # TransCisPredict: A Comprehensive Framework for Protein Level Prediction
 
-This repository contains the complete analysis pipeline and trained weights for our comprehensive framework to predict protein levels that incorporates both cis and trans genetic variants to facilitate conducting proteome-wide association studies (PWAS) on a biobank scale. Due to size constraints, the complete datasets are available through Synapse (see Data Availability section below).
+This repository contains the complete analysis pipeline for the comprehensive framework to predict protein levels that incorporates both _cis_- and _trans_- variants to facilitate conducting proteome-wide association studies (PWAS) on a biobank scale. The weights that have been generated from UK Biobank are also available through Synapse [FIXME: Synapse ID and the link].
 
 ## Repository Structure
 
@@ -14,12 +14,12 @@ TransCisPredict/
     ├── step1_data_processing/  # Raw data processing and QC
     ├── step2_covariate_regression/  # Covariate adjustment
     ├── step3_ld_block_selection/    # Genomic region selection
-    ├── step4_cross_validation/      # Method evaluation via CV
-    ├── step5_cv_evaluation/         # CV performance assessment
-    ├── step6_whole_sample_analysis/ # Final model training
-    ├── step7_population_prediction/ # Proteome prediction
-    ├── step8_pwas_analysis/         # Association testing
-    └── utilities/                   # Common functions and methods
+    ├── step4_cross_validation/      # CV using BayesR, SuSiE, LASSO, and Elastic Net
+    ├── step5_cv_evaluation/         # CV performance evaluation
+    ├── step6_whole_sample_analysis/ # Weight Estimation using the "optimal" method
+    ├── step7_population_prediction/ # Protein expression level prediction in target sample
+    ├── step8_pwas_analysis/         # Proteome-wide association analyses (PWAS)
+    └── utilities/                   # Commonly used functions
 ```
 
 ## Quick Start
