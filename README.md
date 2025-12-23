@@ -23,9 +23,13 @@ TransCisPredict/
 ## Quick Start
 
 a. **Setup Environment**: Install required R packages (see `scripts/README.md`)
+
 b. **Configure Paths**: Modify placeholder paths in each script's configuration section
+
 c. **Obtain Prediction Weights**: Either download pre-computed weights from [Synapse ID: 69052240](https://www.synapse.org/Synapse:syn69052240/wiki/634058), or generate custom weights by running steps 1-6 of the analysis pipeline
+
 d. **Predict Protein Levels**: Use the obtained weights to predict protein expression levels in your target sample (see `step7_population_prediction/`)
+
 e. **Perform PWAS**: Conduct proteome-wide association studies using the predicted protein levels (see `step8_pwas_analysis/`)
 
 ## Key Components
