@@ -48,4 +48,4 @@ Please cite the associated manuscript when using these analysis scripts and pred
 
 ## License
 
-This repository is intended for academic research and manuscript reproducibility. Please respect data usage agreements for UK Biobank data [FIXME].
+This repository is intended for academic research and manuscript reproducibility. Please follow [Guidance on Researcher Responsibilities for UK Biobank resource](https://community.ukbiobank.ac.uk/hc/en-gb/articles/28019735378333-Guidance-on-Researcher-Responsibilities).
