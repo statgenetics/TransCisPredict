@@ -104,7 +104,9 @@ compute_pqtl_weights <- function(y, X, weight_methods, num_cores, seed = NULL) {
         weights_vector <- do.call(method_name, c(list(X = X_filtered, y = y), args))
         
         # Name and return weights
-        if (method_name == "lm_weights") {
+        # Ensure all methods have proper SNP names (not just lm_weights)
+        # This is critical for methods like lasso/enet that return unnamed weights
+        if (is.null(names(weights_vector)) || all(is.na(names(weights_vector)))) {
             names(weights_vector) <- colnames(X_filtered)
         }
         weights_matrix[, 1] <- weights_vector
