@@ -44,7 +44,7 @@ This framework enables:
 ## Citation
 
 Please cite the associated manuscript when using these analysis scripts and prediction weights for research purposes:
-> Dong R, Lamb D, Wang GT, DeWan AT, Leal SM. Leveraging cis- and trans-variants to improve plasma protein level prediction for proteome-wide association studies (2025). Submitted.
+> Dong R, Lamb D, Wang GT, DeWan AT, Leal SM. Leveraging cis- and trans-variants to improve plasma protein level prediction for proteome-wide association studies. Genome Res. 2026. doi: 10.1101/gr.282124.126
 
 ## License
 
